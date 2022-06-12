@@ -1,0 +1,9 @@
+steps:
+  - id: install_requirements
+    name: python:3.9
+    entrypoint: pip
+    args: ["install", "-r", "./source/python/build_l1_l2_view_requirements.txt", "--user"]
+  - id: create_or_update_views
+    name: python:3.9
+    entrypoint: python
+    args: ["./source/python/build_l1_l2_view.py"]
