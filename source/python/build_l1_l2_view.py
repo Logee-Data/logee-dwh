@@ -15,8 +15,8 @@ L2_folder = f'{current_path}/sql/dwh/bq_view/L2'
 all_folder = [L1_folder, L2_folder]
 all_views = list()
 
-print(os.listdir(L2_folder))
 print(os.listdir(L1_folder))
+print(os.listdir(L2_folder))
 
 # for root_folder in all_folder:
 #     view_dict = dict()
