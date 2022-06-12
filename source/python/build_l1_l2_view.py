@@ -4,8 +4,8 @@ from google.cloud.exceptions import NotFound
 import os
 
 # Check folder and list all view query
-L1_folder = '../sql/dwh/bq_view/L1'
-L2_folder = '../sql/dwh/bq_view/L2'
+L1_folder = './source/sql/dwh/bq_view/L1'
+L2_folder = './source/sql/dwh/bq_view/L2'
 all_folder = [L1_folder, L2_folder]
 all_views = list()
 
