@@ -4,9 +4,6 @@
 
 1. [How to create view for L1 or L2](#how-to-create-views-for-l1-or-l2)
 
----
-
-
 ## How to create Views for L1 or L2
 
 1. Make sure that you are on the `main` branch by running the `git branch` command.
