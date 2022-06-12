@@ -9,7 +9,6 @@ current_path = (
     .replace('/python', '')
 )
 
-
 L1_folder = f'{current_path}/sql/dwh/bq_view/L1'
 L2_folder = f'{current_path}/sql/dwh/bq_view/L2'
 all_folder = [L1_folder, L2_folder]
