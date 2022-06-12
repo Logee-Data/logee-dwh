@@ -4,12 +4,8 @@ from google.cloud.exceptions import NotFound
 import os
 
 # Check folder and list all view query
-current_path = (
-    os.path.dirname(os.path.realpath(__file__))
-    .replace('/python', '')
-)
-L1_folder = f'{current_path}/sql/dwh/bq_view/L1'
-L2_folder = f'{current_path}/sql/dwh/bq_view/L2'
+L1_folder = '/workspace/./source/sql/dwh/bq_view/L1'
+L2_folder = '/workspace/./source/sql/dwh/bq_view/L2'
 all_folder = [L1_folder, L2_folder]
 all_views = list()
 
