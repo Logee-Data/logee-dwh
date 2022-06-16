@@ -1,3 +1,4 @@
+-- existing query
 WITH base AS (
   SELECT
     * REPLACE(
