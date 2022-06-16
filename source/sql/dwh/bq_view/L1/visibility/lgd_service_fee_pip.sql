@@ -2,7 +2,7 @@ SELECT
   REPLACE(JSON_EXTRACT(data, '$.product_id'),'"','') AS product_id,
   REPLACE(JSON_EXTRACT(data, '$.product_seller_id'),'"','') AS product_seller_id,
   REPLACE(JSON_EXTRACT(data, '$.product_name'),'"','') AS product_name,
-  CAST(JSON_EXTRACT(data, '$.weight') AS INT64) AS weight,
+  CAST(JSON_EXTRACT(data, '$.weight') AS FLOAT64) AS weight,
   REPLACE(JSON_EXTRACT(data, '$.weight_metrics'),'"','') AS weight_metrics,
   CAST(JSON_EXTRACT(data, '$.price') AS FLOAT64)  AS price,
   CAST(JSON_EXTRACT(data, '$.konstanta') AS INT64) AS konstanta,
