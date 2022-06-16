@@ -1,6 +1,6 @@
 WITH base AS (
   SELECT *
-  FROM `logee-data-dev.logee_datalake_raw_development.visibility_lgd_product`
+  FROM `logee-data-prod.logee_datalake_raw_production.visibility_lgd_product`
   WHERE _date_partition >= '2022-01-01'
 )
 
@@ -43,7 +43,7 @@ WITH base AS (
   SELECT
     original_data,
     published_timestamp,
-    JSON_EXTRACT(product_variant,  '$.variantName') AS variant_name,
+    JSON_EXTRACT(product_variant,  '$.variantName')AS variant_name,
     ARRAY_AGG(
       REPLACE(variant_list, '"', '')
     ) AS variant_list
@@ -57,7 +57,6 @@ WITH base AS (
   SELECT 
     original_data,
     published_timestamp,
-    -- pk,
     ARRAY_AGG(
     STRUCT(
       variant_name,
@@ -91,16 +90,16 @@ SELECT
   CAST(JSON_EXTRACT(B.data, '$.productStock') AS INT64) AS product_stock,
   CAST(JSON_EXTRACT(B.data, '$.productMinimumOrder') AS INT64) AS product_minimum_order,
 A.product_variant, 
-CAST(JSON_EXTRACT(A.original_data, '$.isTax') AS BOOLEAN) AS is_tax,
-CAST(JSON_EXTRACT(A.original_data, '$.isBonus') AS BOOLEAN) AS is_bonus,
-CAST(JSON_EXTRACT(A.original_data, '$.isDeleted') AS BOOLEAN) AS is_deleted,
-REPLACE(JSON_EXTRACT(A.original_data, '$.createdBy'),'"','') AS created_by,
-CAST(REPLACE(JSON_EXTRACT(A.original_data, '$.createdAt'),'"','') AS TIMESTAMP) AS created_at,
-REPLACE(JSON_EXTRACT(A.original_data, '$.modifiedBy'),'"','') AS modified_by,
-CAST(REPLACE(JSON_EXTRACT(A.original_data, '$.modifiedAt'),'"','') AS TIMESTAMP) AS modified_at,
-A.original_data,
-A.published_timestamp
+CAST(JSON_EXTRACT(B.original_data, '$.isTax') AS BOOLEAN) AS is_tax,
+CAST(JSON_EXTRACT(B.original_data, '$.isBonus') AS BOOLEAN) AS is_bonus,
+CAST(JSON_EXTRACT(B.original_data, '$.isDeleted') AS BOOLEAN) AS is_deleted,
+REPLACE(JSON_EXTRACT(B.original_data, '$.createdBy'),'"','') AS created_by,
+CAST(REPLACE(JSON_EXTRACT(B.original_data, '$.createdAt'),'"','') AS TIMESTAMP) AS created_at,
+REPLACE(JSON_EXTRACT(B.original_data, '$.modifiedBy'),'"','') AS modified_by,
+CAST(REPLACE(JSON_EXTRACT(B.original_data, '$.modifiedAt'),'"','') AS TIMESTAMP) AS modified_at,
+B.original_data,
+B.published_timestamp
 FROM product_variant A
-  LEFT JOIN pre_data B
+  FULL OUTER JOIN pre_data B
   ON A.original_data = B.original_data
   AND A.published_timestamp = B.published_timestamp
