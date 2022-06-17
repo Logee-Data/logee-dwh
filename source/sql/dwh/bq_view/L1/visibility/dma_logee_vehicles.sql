@@ -18,8 +18,8 @@ SELECT
   IF(REPLACE(JSON_EXTRACT_SCALAR(data, '$.tidNum'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT_SCALAR(data, '$.tidNum'), '"', ''))  AS tid_number,
   JSON_EXTRACT_SCALAR(data, '$.tnkbColour') AS tnkb_colour,
   IF(REPLACE(JSON_EXTRACT_SCALAR(data, '$.imageStnk'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT_SCALAR(data, '$.imageStnk'), '"', ''))  AS image_stnk,
-  CAST(JSON_EXTRACT_SCALAR(data, '$.wheels') AS INT64) AS wheels,
-  CAST(JSON_EXTRACT_SCALAR(data, '$.capacityWeight') AS INT64) AS capacity_weight,
+  CAST(JSON_EXTRACT_SCALAR(data, '$.wheels') AS FLOAT64) AS wheels,
+  CAST(JSON_EXTRACT_SCALAR(data, '$.capacityWeight') AS FLOAT64) AS capacity_weight,
   CAST(JSON_EXTRACT_SCALAR(data, '$.vehicleStatus') AS BOOL) AS vehicle_status,
   JSON_EXTRACT_SCALAR(data, '$.itemCategories') AS item_categories,
   CAST(REPLACE(JSON_EXTRACT(data, '$.isActive'), '"', '') AS BOOL) AS is_active,
@@ -30,5 +30,6 @@ SELECT
   REPLACE(JSON_EXTRACT(data, '$.modifiedBy'), '"', '') AS modified_by,
   data AS original_data,
   ts AS published_timstamp
-FROM `logee-data-dev.logee_datalake_raw_development.visibility_dma_logee_vehicles` 
-WHERE _date_partition >= "2022-01-01"
+FROM logee-data-prod.logee_datalake_raw_production.visibility_dma_logee_vehicles
+WHERE _date_partition >= "2022-01-01" 
+LIMIT 1000
