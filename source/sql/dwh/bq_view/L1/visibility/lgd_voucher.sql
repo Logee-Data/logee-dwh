@@ -57,3 +57,7 @@ FROM base A
   LEFT JOIN company_ids B
   ON A.data = B.data
   AND A.ts = B.published_timestamp
+  
+  LEFT JOIN company_group_ids C
+  ON A.data = C.data
+  AND A.ts = C.published_timestamp
