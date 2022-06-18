@@ -19,13 +19,28 @@ WITH base AS (
 
 -- End
 
+-- BEGIN company_group_ids
+,company_group_ids AS (
+  SELECT
+    data,
+    ts AS published_timestamp,
+    ARRAY_AGG (
+      REPLACE(company_group_ids , '"', '')
+    ) AS company_group_ids 
+  FROM
+    base,
+    UNNEST(JSON_EXTRACT_ARRAY(data, '$.company_group_ids ')) AS company_group_ids 
+  GROUP BY 1,2
+)
+
+-- End
 
 SELECT 
   REPLACE(JSON_EXTRACT(A.data, '$.voucherCode'), '"', '') AS voucher_code,
   CAST(REPLACE(JSON_EXTRACT(A.data, '$.amount'), '"', '') AS INT64) AS amount,
   REPLACE(JSON_EXTRACT(A.data, '$.orderId'), '"', '') AS order_id,
   B.company_ids,
-  REPLACE(JSON_EXTRACT(A.data, '$.companyGroupIds'), '"', '') AS company_group_ids,
+  C.company_group_ids,
   IF(REPLACE(JSON_EXTRACT(A.data, '$.voucherTitle'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(A.data, '$.voucherTitle'), '"', '')) AS voucher_title,
   IF(REPLACE(JSON_EXTRACT(A.data, '$.voucherDescription'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(A.data, '$.voucherDescription'), '"', '')) AS voucher_description,
   REPLACE(JSON_EXTRACT(A.data, '$.voucherStatus'), '"', '') AS voucher_status,
