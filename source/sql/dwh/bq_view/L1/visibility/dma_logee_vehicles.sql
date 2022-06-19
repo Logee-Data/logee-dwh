@@ -2,23 +2,23 @@ SELECT
   JSON_EXTRACT_SCALAR(data, '$.vehicleId') AS vehicle_id,
   JSON_EXTRACT_SCALAR(data, '$.vehicleGroupId') AS vehicle_group_id,
   JSON_EXTRACT_SCALAR(data, '$.vehicleGroupName') AS vehicle_group_name,
-  JSON_EXTRACT_SCALAR(data, '$.brandId') AS brand_id,
-  IF(REPLACE(JSON_EXTRACT_SCALAR(data, '$.brandName'), '-', '') = "", NULL, REPLACE(JSON_EXTRACT_SCALAR(data, '$.brandName'), '"', ''))  AS brand_name,
-  JSON_EXTRACT_SCALAR(data, '$.policeNum') AS police_number,
+  IF(REPLACE(JSON_EXTRACT_SCALAR(data, '$.brandId'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT_SCALAR(data, '$.brandId'), '"', ''))  AS brand_id,
+  IF(REPLACE(JSON_EXTRACT_SCALAR(data, '$.brandName'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT_SCALAR(data, '$.brandName'), '"', ''))  AS brand_name,
+  IF(REPLACE(JSON_EXTRACT_SCALAR(data, '$.policeNum'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT_SCALAR(data, '$.policeNum'), '"', ''))  AS police_number,
   CAST(JSON_EXTRACT_SCALAR(data, '$.manufactureYear') AS INT64) AS manufacture_year,
   CAST(JSON_EXTRACT_SCALAR(data, '$.ownershipStatus') AS INT64) AS ownership_status,
   JSON_EXTRACT_SCALAR(data, '$.companyId') AS company_id,
-  IF(REPLACE(JSON_EXTRACT_SCALAR(data, '$.companyName'), 'null', '') = "", NULL, REPLACE(JSON_EXTRACT_SCALAR(data, '$.companyName'), '"', ''))  AS company_name,
-  CAST(REPLACE(JSON_EXTRACT(data, '$.kirExpiryDate'), '"', '') AS TIMESTAMP) AS kir_expiry_date,
-  JSON_EXTRACT_SCALAR(data, '$.kirNum') AS kir_number,
+  IF(REPLACE(JSON_EXTRACT_SCALAR(data, '$.companyName'), 'null', '') = "", NULL, REPLACE(JSON_EXTRACT_SCALAR(data, '$.companyName'), 'null', ''))  AS company_name,
+  DATE(REPLACE(JSON_EXTRACT(data, '$.kirExpiryDate'), '"', '')) kir_expiry_date,
+  IF(REPLACE(JSON_EXTRACT_SCALAR(data, '$.kirNum'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT_SCALAR(data, '$.kirNum'), '"', ''))  AS kir_number,
   IF(REPLACE(JSON_EXTRACT_SCALAR(data, '$.stnkAddress'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT_SCALAR(data, '$.stnkAddress'), '"', ''))  AS stnk_address,
-  CAST(REPLACE(JSON_EXTRACT(data, '$.stnkExpiryDate'), '"', '') AS TIMESTAMP) AS stnk_expiry_date,
-  JSON_EXTRACT_SCALAR(data, '$.stnkNum') AS stnk_number,
-  JSON_EXTRACT_SCALAR(data, '$.stnkOwnerName') AS stnk_owner_name,
+  DATE(REPLACE(JSON_EXTRACT(data, '$.stnkExpiryDate'), '"', '')) stnk_expiry_date,
+  IF(REPLACE(JSON_EXTRACT_SCALAR(data, '$.stnkNum'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT_SCALAR(data, '$.stnkNum'), '"', ''))  AS stnk_number,
+  IF(REPLACE(JSON_EXTRACT_SCALAR(data, '$.stnkOwnerName'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT_SCALAR(data, '$.stnkOwnerName'), '"', ''))  AS stnk_owner_name,
   IF(REPLACE(JSON_EXTRACT_SCALAR(data, '$.tidNum'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT_SCALAR(data, '$.tidNum'), '"', ''))  AS tid_number,
-  JSON_EXTRACT_SCALAR(data, '$.tnkbColour') AS tnkb_colour,
+  IF(REPLACE(JSON_EXTRACT_SCALAR(data, '$.tnkbColour'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT_SCALAR(data, '$.tnkbColour'), '"', ''))  AS tnkb_colour,
   IF(REPLACE(JSON_EXTRACT_SCALAR(data, '$.imageStnk'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT_SCALAR(data, '$.imageStnk'), '"', ''))  AS image_stnk,
-  CAST(JSON_EXTRACT_SCALAR(data, '$.wheels') AS FLOAT64) AS wheels,
+  CAST(JSON_EXTRACT_SCALAR(data, '$.wheels') AS INT64) AS wheels,
   CAST(JSON_EXTRACT_SCALAR(data, '$.capacityWeight') AS FLOAT64) AS capacity_weight,
   CAST(JSON_EXTRACT_SCALAR(data, '$.vehicleStatus') AS BOOL) AS vehicle_status,
   JSON_EXTRACT_SCALAR(data, '$.itemCategories') AS item_categories,
@@ -30,6 +30,5 @@ SELECT
   REPLACE(JSON_EXTRACT(data, '$.modifiedBy'), '"', '') AS modified_by,
   data AS original_data,
   ts AS published_timstamp
-FROM logee-data-prod.logee_datalake_raw_production.visibility_dma_logee_vehicles
-WHERE _date_partition >= "2022-01-01" 
-LIMIT 1000
+FROM `logee-data-prod.logee_datalake_raw_production.visibility_dma_logee_vehicles` 
+WHERE _date_partition >= "2022-01-01"
