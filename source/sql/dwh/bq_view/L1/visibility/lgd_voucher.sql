@@ -29,7 +29,7 @@ WITH base AS (
     ) AS company_group_ids 
   FROM
     base,
-    UNNEST(JSON_EXTRACT_ARRAY(data, '$.company_group_ids ')) AS company_group_ids 
+    UNNEST(JSON_EXTRACT_ARRAY(data, '$.companyGroupIds')) AS company_group_ids 
   GROUP BY 1,2
 )
 
@@ -37,7 +37,7 @@ WITH base AS (
 
 SELECT 
   REPLACE(JSON_EXTRACT(A.data, '$.voucherCode'), '"', '') AS voucher_code,
-  CAST(REPLACE(JSON_EXTRACT(A.data, '$.amount'), '"', '') AS INT64) AS amount,
+  CAST(REPLACE(JSON_EXTRACT(A.data, '$.amount'), '"', '') AS FLOAT64) AS amount,
   REPLACE(JSON_EXTRACT(A.data, '$.orderId'), '"', '') AS order_id,
   B.company_ids,
   C.company_group_ids,
