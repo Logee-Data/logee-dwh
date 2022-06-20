@@ -10,7 +10,7 @@ WITH BASE AS (
   ts AS published_timestamp,
   ARRAY_AGG(
     STRUCT(
-      JSON_EXTRACT(pre_track_activities, '$.type') AS track_activities_type,
+      JSON_EXTRACT_SCALAR(pre_track_activities, '$.type') AS track_activities_type,
       CAST(JSON_EXTRACT_SCALAR(pre_track_activities, '$.timestamp') AS TIMESTAMP) AS track_activities_timestamp,
       STRUCT(
         JSON_EXTRACT(pre_track_activities, '$.location.lat') AS location_lat,
@@ -29,10 +29,10 @@ WITH BASE AS (
   ts AS published_timestamp,
   ARRAY_AGG(
     STRUCT(
-      JSON_EXTRACT(pre_attendances, '$.status') AS attendances_status,
+      REPLACE(JSON_EXTRACT(pre_attendances, '$.status'),'"','') AS attendances_status,
       CAST(JSON_EXTRACT_SCALAR(pre_attendances, '$.date') AS TIMESTAMP) AS attendances_date,
       STRUCT(
-        JSON_EXTRACT(pre_attendances, '$.location.address') AS attendances_location_address,
+        REPLACE(JSON_EXTRACT(pre_attendances, '$.location.address'),'"','') AS attendances_location_address,
         JSON_EXTRACT(pre_attendances, '$.location.lat') AS attendances_location_lat,
         JSON_EXTRACT(pre_attendances, '$.location.long') AS attendances_location_long
       ) AS location
