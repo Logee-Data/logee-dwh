@@ -1,6 +1,6 @@
 WITH 
 base AS (
-  SELECT * FROM `logee-data-dev.logee_datalake_raw_development.visibility_lgd_companies`
+  SELECT * FROM `logee-data-prod.logee_datalake_raw_production.visibility_lgd_companies`
   WHERE _date_partition >= '2022-01-01'
   )
 
@@ -194,6 +194,7 @@ SELECT
   B.company_partnership,
   C.bank_account,
   D.settings,
+  F.apps,
   CAST(JSON_EXTRACT_SCALAR(A.data, '$.isActive')AS BOOL) AS is_active,
   CAST(JSON_EXTRACT_SCALAR(A.data, '$.isDeleted')AS BOOL) AS is_deleted,
  CAST(REPLACE(JSON_EXTRACT(A.data, '$.createdAt'), '"', '') AS TIMESTAMP) AS created_at,
@@ -214,3 +215,7 @@ SELECT
   LEFT JOIN settings D
   ON A.data = D.data
   AND A.ts = D.published_timestamp
+
+  LEFT JOIN apps F
+  ON A.data = F.data
+  AND A.ts = F.published_timestamp
