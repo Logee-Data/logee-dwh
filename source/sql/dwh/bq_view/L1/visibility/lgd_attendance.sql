@@ -52,7 +52,7 @@ SELECT
   B.track_activities,
   C.attendances,
   CAST(JSON_EXTRACT_SCALAR(data, '$.date') AS TIMESTAMP) AS date,
-  JSON_EXTRACT(data, '$.isDeleted') AS is_deleted,
+  CAST(JSON_EXTRACT(data, '$.isDeleted') AS BOOLEAN) AS is_deleted,
   REPLACE(JSON_EXTRACT(data, '$.createdBy'),'"','') AS created_by,
   CAST(JSON_EXTRACT_SCALAR(data, '$.createdAt') AS TIMESTAMP) AS created_at,
   REPLACE(JSON_EXTRACT(data, '$.modifiedBy'),'"','') AS modified_by,
