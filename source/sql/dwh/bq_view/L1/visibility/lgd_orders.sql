@@ -73,7 +73,7 @@ base AS (
       JSON_EXTRACT_SCALAR(list_address, '$.long') AS long,
       CAST(JSON_EXTRACT_SCALAR(list_address, '$.isFulfillmentProcess') AS BOOL) AS is_fulfillment_process,
       JSON_EXTRACT_SCALAR(list_address, '$.addressId') AS address_id,
-      IF(JSON_EXTRACT_SCALAR(list_address, '$.addressMark') = "", NULL, JSON_EXTRACT_SCALAR(list_address, '$.addressMark')) AS address_mark
+      IF(JSON_EXTRACT_SCALAR(list_address, '$.addressMark') IN ("", "\"\""), NULL, JSON_EXTRACT_SCALAR(list_address, '$.addressMark')) AS address_mark
     ) AS list_address
   FROM base,
     UNNEST(JSON_EXTRACT_ARRAY(JSON_EXTRACT(data, '$.store'), '$.listAddress')) AS list_address
@@ -117,7 +117,7 @@ base AS (
       JSON_EXTRACT_SCALAR(data, '$.store.mainAddress.long') AS long,
       CAST(JSON_EXTRACT_SCALAR(data, '$.store.mainAddress.isFulfillmentProcess') AS BOOL) AS is_fulfillment_process,
       JSON_EXTRACT_SCALAR(data, '$.store.mainAddress.addressId') AS address_id,
-      IF(JSON_EXTRACT_SCALAR(data, '$.store.mainAddress.addressMark') = "", NULL, JSON_EXTRACT(data, '$.store.mainAddress.addressMark')) AS address_mark
+      IF(JSON_EXTRACT_SCALAR(data, '$.store.mainAddress.addressMark') IN ("", "\"\""), NULL, JSON_EXTRACT(data, '$.store.mainAddress.addressMark')) AS address_mark
     ) AS main_address
   FROM base
 )
@@ -483,12 +483,12 @@ SELECT
   JSON_EXTRACT_SCALAR(A.data, '$.purchaseOnDeliveryId') AS purchase_on_delivery_id,
   JSON_EXTRACT_SCALAR(A.data, '$.purchaseOrderId') AS purchase_order_id,
   IF(REPLACE(JSON_EXTRACT_SCALAR(A.data, '$.urlPurchaseOnDeliveryPdf'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT_SCALAR(A.data, '$.urlPurchaseOnDeliveryPdf'), '"', '')) AS url_purchase_on_delivery_pdf,
-  JSON_EXTRACT_SCALAR(A.data, '$.orderMethod') AS order_method,
-  JSON_EXTRACT_SCALAR(A.data, '$.paymentMethodLabel') AS payment_method_label,
-  JSON_EXTRACT_SCALAR(A.data, '$.companyCategory') AS company_category,
-  JSON_EXTRACT_SCALAR(A.data, '$.urlSalesOrderPdf') AS url_sales_order_pdf,
-  JSON_EXTRACT_SCALAR(A.data, '$.companyName') AS company_name,
-  JSON_EXTRACT_SCALAR(A.data, '$.billCode') AS bill_code,
+  IF(JSON_EXTRACT_SCALAR(A.data, '$.orderMethod') IN ("", "\"\""), NULL, JSON_EXTRACT_SCALAR(A.data, '$.orderMethod')) AS order_method,
+  IF(JSON_EXTRACT_SCALAR(A.data, '$.paymentMethodLabel') IN ("", "\"\""), NULL, JSON_EXTRACT_SCALAR(A.data, '$.paymentMethodLabel')) AS payment_method_label,
+  IF(JSON_EXTRACT_SCALAR(A.data, '$.companyCategory') IN ("", "\"\""), NULL, JSON_EXTRACT_SCALAR(A.data, '$.companyCategory')) AS company_category,
+  IF(JSON_EXTRACT_SCALAR(A.data, '$.urlSalesOrderPdf') IN ("", "\"\""), NULL, JSON_EXTRACT_SCALAR(A.data, '$.urlSalesOrderPdf')) AS url_sales_order_pdf,
+  IF(JSON_EXTRACT_SCALAR(A.data, '$.companyName') IN ("", "\"\""), NULL, JSON_EXTRACT_SCALAR(A.data, '$.companyName')) AS company_name,
+  IF(JSON_EXTRACT_SCALAR(A.data, '$.billCode') IN ("", "\"\""), NULL, JSON_EXTRACT_SCALAR(A.data, '$.billCode')) AS bill_code,
   CAST(JSON_EXTRACT_SCALAR(A.data, '$.orderDiscount') AS INT64) AS order_discount,
   JSON_EXTRACT_SCALAR(A.data, '$.orderStatus') AS order_status,
   IF(REPLACE(JSON_EXTRACT_SCALAR(A.data, '$.urlInvoicePdf'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT_SCALAR(A.data, '$.urlInvoicePdf'), '"', ''))  AS url_invoice_pdf,
