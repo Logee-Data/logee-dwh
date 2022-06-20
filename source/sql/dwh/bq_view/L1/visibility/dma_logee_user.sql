@@ -2,7 +2,7 @@ WITH
 
 base AS (
   SELECT * FROM `logee-data-prod.logee_datalake_raw_production.visibility_dma_logee_user` 
-  WHERE _date_partition >= "2022-01-01"
+  WHERE _date_partition = "2022-06-20" LIMIT 1000
 )
 
 -- Begin apps
@@ -37,7 +37,6 @@ base AS (
 -- End
 
 SELECT 
-  REPLACE(JSON_EXTRACT(A.data, '$.userId'), '"', '') AS user_id,
   IF(REPLACE(JSON_EXTRACT(A.data, '$.phone'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(A.data, '$.phone'), '"', '')) AS phone,
   IF(REPLACE(JSON_EXTRACT(A.data, '$.email'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(A.data, '$.email'), '"', '')) AS email,
   REPLACE(JSON_EXTRACT(A.data, '$.name'), '"', '') AS name,
@@ -47,13 +46,13 @@ SELECT
   CAST(JSON_EXTRACT(A.data, '$.showTracking') AS BOOLEAN) AS show_tracking,
   IF(REPLACE(JSON_EXTRACT(A.data, '$.unseen'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(A.data, '$.unseen'), '"', '')) AS unseen,
   STRUCT(
-    IF(REPLACE(JSON_EXTRACT(A.data, '$.userMeta.phone'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(A.data, '$.userMeta.phone'), '"', '')) AS user_meta_phone,
+    IF(REPLACE(JSON_EXTRACT(A.data, '$.userMeta.phone'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(A.data, '$.userMeta.phone'), '"', '')) AS phone,
     REPLACE(JSON_EXTRACT(A.data, '$.userMeta.ktpNum'), '"', '') AS ktp_num,
     REPLACE(JSON_EXTRACT(A.data, '$.userMeta.simNum'), '"', '') AS sim_num,
     REPLACE(JSON_EXTRACT(A.data, '$.userMeta.simType'), '"', '') AS sim_type,
-    REPLACE(JSON_EXTRACT(A.data, '$.userMeta.deviceId'), '"', '') AS device_id,
-    REPLACE(JSON_EXTRACT(A.data, '$.userMeta.driverId'), '"', '') AS driver_id,
-    REPLACE(JSON_EXTRACT(A.data, '$.userMeta.companyId'), '"', '') AS company_id,
+    IF(REPLACE(JSON_EXTRACT(A.data, '$.userMeta.deviceId'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(A.data, '$.userMeta.deviceId'), '"', '')) AS device_id,
+    IF(REPLACE(JSON_EXTRACT(A.data, '$.userMeta.driverId'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(A.data, '$.userMeta.driverId'), '"', '')) AS driver_id,
+    IF(REPLACE(JSON_EXTRACT(A.data, '$.userMeta.companyId'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(A.data, '$.userMeta.companyId'), '"', '')) AS company_id,
     IF(JSON_EXTRACT(A.data, '$.userMeta.driverStatus')  = "", NULL, JSON_EXTRACT(A.data, '$.driverStatus')) AS driver_status,
     CAST(JSON_EXTRACT(A.data, '$.userMeta.isRegisteringFromApp') AS BOOLEAN) AS is_registering_from_app,
     REPLACE(JSON_EXTRACT(A.data, '$.userMeta.groupId'), '"', '')AS group_id,
@@ -71,6 +70,7 @@ SELECT
   CAST(REPLACE(JSON_EXTRACT(A.data, '$.createdAt'), '"', '') AS TIMESTAMP) AS created_at,
   CAST(REPLACE(JSON_EXTRACT(A.data, '$.modifiedAt'), '"', '') AS TIMESTAMP) AS modified_at,
   REPLACE(JSON_EXTRACT(A.data, '$.modifiedBy'), '"', '') AS modified_by,
+  REPLACE(JSON_EXTRACT(A.data, '$.userId'), '"', '') AS user_id,
   A.data AS original_data,
   ts AS published_timestamp
 
