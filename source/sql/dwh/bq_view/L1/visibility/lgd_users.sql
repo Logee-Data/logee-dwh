@@ -262,6 +262,7 @@ SELECT
   IF(REPLACE(JSON_EXTRACT(A.data, '$.userId'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(A.data, '$.userId'), '"', '')) AS user_id,
   IF(REPLACE(JSON_EXTRACT(A.data, '$.username'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(A.data, '$.username'), '"', '')) AS user_name,
   IF(REPLACE(JSON_EXTRACT(A.data, '$.userType'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(A.data, '$.userType'), '"', '')) AS user_type,
+  IF(REPLACE(JSON_EXTRACT(A.data, '$.password'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(A.data, '$.password'), '"', '')) AS password,
   IF(REPLACE(JSON_EXTRACT(A.data, '$.email'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(A.data, '$.email'), '"', '')) AS email,
   IF(REPLACE(JSON_EXTRACT(A.data, '$.phoneNumber'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(A.data, '$.phoneNumber'), '"', '')) AS phone_number,
   IF(REPLACE(JSON_EXTRACT(A.data, '$.roleId'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(A.data, '$.roleId'), '"', '')) AS role_id,
