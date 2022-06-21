@@ -45,10 +45,10 @@ WITH base AS (
         IF(JSON_EXTRACT_SCALAR(destination_list, '$.itemCategoryName') = "", NULL, JSON_EXTRACT_SCALAR(destination_list, '$.itemCategoryName')) AS item_category_name,
         IF(JSON_EXTRACT_SCALAR(destination_list, '$.destinationAddress') = "", NULL, JSON_EXTRACT_SCALAR(destination_list, '$.destinationAddress')) AS destination_address,
         IF(JSON_EXTRACT_SCALAR(destination_list, '$.destinationPicName') = "", NULL, JSON_EXTRACT_SCALAR(destination_list, '$.destinationPicName')) AS destination_pic_name,
-        IF(JSON_EXTRACT_SCALAR(destination_list, '$.destinationLatitude') = "", NULL, JSON_EXTRACT_SCALAR(destination_list, '$.destinationLatitude')) AS destination_latitude,
+        CAST(IF(JSON_EXTRACT_SCALAR(destination_list, '$.destinationPicName') = "", NULL, JSON_EXTRACT_SCALAR(destination_list, '$.destinationLatitude')) AS FLOAT64) AS destination_latitude,
+        CAST(IF(JSON_EXTRACT_SCALAR(destination_list, '$.destinationPicName') = "", NULL, JSON_EXTRACT_SCALAR(destination_list, '$.destinationLongitude')) AS FLOAT64) AS destination_longitude,
         IF(JSON_EXTRACT_SCALAR(destination_list, '$.destinationLocation') = "", NULL, JSON_EXTRACT_SCALAR(destination_list, '$.destinationLocation')) AS destination_location,
         IF(JSON_EXTRACT_SCALAR(destination_list, '$.destinationPicPhone') = "", NULL, JSON_EXTRACT_SCALAR(destination_list, '$.destinationPicPhone')) AS destination_pic_phone,
-        IF(JSON_EXTRACT_SCALAR(destination_list, '$.destinationLongitude') = "", NULL, JSON_EXTRACT_SCALAR(destination_list, '$.destinationLongitude')) AS destination_longitude
       )
     ) AS destination_list
   FROM
@@ -65,7 +65,7 @@ SELECT
   IF(JSON_EXTRACT_SCALAR(A.data, '$.cargoCompanyName') = "", NULL, JSON_EXTRACT_SCALAR(A.data, '$.cargoCompanyName')) AS cargo_company_name,
   IF(REPLACE(JSON_EXTRACT(A.data, '$.deliveryNotes'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(A.data, '$.deliveryNotes'), '"', '')) AS delivery_notes,
   CAST(JSON_EXTRACT_SCALAR(A.data, '$.distance') AS FLOAT64) AS distance,
-  CAST(JSON_EXTRACT_SCALAR(A.data, '$.driverHelper') AS INT64) AS driverHelper,
+  CAST(JSON_EXTRACT_SCALAR(A.data, '$.driverHelper') AS INT64) AS driver_helper,
   IF(REPLACE(JSON_EXTRACT(A.data, '$.escortId'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(A.data, '$.escortId'), '"', '')) AS escort_id,
   CAST(IF(JSON_EXTRACT_SCALAR(A.data, '$.insuranceAmount') = "", NULL, JSON_EXTRACT_SCALAR(A.data, '$.insuranceAmount')) AS FLOAT64) AS insurance_amount,
   REPLACE(JSON_EXTRACT(A.data, '$.itemCategoryId'), '"', '') AS item_category_id,
@@ -95,8 +95,8 @@ SELECT
   REPLACE(JSON_EXTRACT(A.data, '$.originAddress'), '"', '') AS origin_address,
   REPLACE(JSON_EXTRACT(A.data, '$.originCity'), '"', '') AS origin_city,
   REPLACE(JSON_EXTRACT(A.data, '$.originLocation'), '"', '') AS origin_location,
-  CAST(REPLACE(JSON_EXTRACT(A.data, '$.originLatitude'), '"', '') AS FLOAT64) AS origin_latitude,
-  CAST(REPLACE(JSON_EXTRACT(A.data, '$.originLongitude'), '"', '') AS FLOAT64) AS origin_longitude,
+  CAST(JSON_EXTRACT(A.data, '$.originLatitude') AS FLOAT64) AS origin_latitude,
+  CAST(JSON_EXTRACT(A.data, '$.originLongitude') AS FLOAT64) AS origin_longitude,
   REPLACE(JSON_EXTRACT(A.data, '$.originPicName'), '"', '') AS origin_pic_name,
   REPLACE(JSON_EXTRACT(A.data, '$.originPicPhone'), '"', '') AS origin_pic_phone,
   CAST(REPLACE(JSON_EXTRACT(A.data, '$.destinationCount'), '"', '') AS INT64) AS destination_count,
