@@ -57,7 +57,7 @@ base AS (
     ARRAY_AGG(
       STRUCT(
         IF(JSON_EXTRACT_SCALAR(booked_stock, '$.orderId') = "", NULL, JSON_EXTRACT_SCALAR(booked_stock, '$.orderId')) AS order_id,
-        IF(JSON_EXTRACT_SCALAR(booked_stock, '$.stock') = "", NULL, JSON_EXTRACT_SCALAR(booked_stock, '$.stock')) AS stock
+        CAST(IF(JSON_EXTRACT_SCALAR(booked_stock, '$.stock') = "", NULL, JSON_EXTRACT_SCALAR(booked_stock, '$.stock')) AS INT64) AS stock
       )
     ) AS booked_stock
   FROM
@@ -80,8 +80,8 @@ SELECT
   CAST(REPLACE(JSON_EXTRACT(A.data, '$.subProductDiscountPercent'), '"', '') AS FLOAT64) AS sub_product_discount_percent,
   REPLACE(JSON_EXTRACT(A.data, '$.subProductDescription'), '"', '') AS sub_product_description,
   REPLACE(JSON_EXTRACT(A.data, '$.subProductUnit'), '"', '') AS sub_product_unit,
-  CAST(REPLACE(JSON_EXTRACT(A.data, '$.subProductPrice'), '"', '') AS INT64) AS sub_product_price,
-  CAST(REPLACE(JSON_EXTRACT(A.data, '$.subProductWeight'), '"', '') AS INT64) AS sub_product_weight,
+  CAST(REPLACE(JSON_EXTRACT(A.data, '$.subProductPrice'), '"', '') AS FLOAT64) AS sub_product_price,
+  CAST(REPLACE(JSON_EXTRACT(A.data, '$.subProductWeight'), '"', '') AS FLOAT64) AS sub_product_weight,
   IF(REPLACE(JSON_EXTRACT(A.data, '$.externalId'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(A.data, '$.externalId'), '"', '')) AS external_id,
   CAST(REPLACE(JSON_EXTRACT(A.data, '$.onShelf'), '"', '') AS BOOL) AS on_shelf,
   CAST(REPLACE(JSON_EXTRACT(A.data, '$.productOnShelf'), '"', '') AS BOOL) AS product_on_shelf,
@@ -94,6 +94,7 @@ SELECT
     IF(REPLACE(JSON_EXTRACT(A.data, '$.categoryIds.subCategoryId'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(A.data, '$.categoryIds.subCategoryId'), '"', '')) AS sub_category_id,
     IF(REPLACE(JSON_EXTRACT(A.data, '$.categoryIds.subSubCategoryId'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(A.data, '$.categoryIds.subCategoryId'), '"', '')) AS sub_sub_category_id
   ) AS category_ids,
+  CAST(REPLACE(JSON_EXTRACT(A.data, '$.subProductStockOnHold'), '"', '') AS INT64) AS sub_product_stock_on_hold,
   CAST(REPLACE(JSON_EXTRACT(A.data, '$.isTax'), '"', '') AS BOOL) AS is_tax,
   CAST(REPLACE(JSON_EXTRACT(A.data, '$.isBonus'), '"', '') AS BOOL) AS is_bonus,
   CAST(REPLACE(JSON_EXTRACT(A.data, '$.isDeleted'), '"', '') AS BOOL) AS is_deleted,
