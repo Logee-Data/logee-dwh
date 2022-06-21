@@ -2,7 +2,7 @@ WITH
 
 base AS (
   SELECT * FROM `logee-data-prod.logee_datalake_raw_production.visibility_dma_logee_user` 
-  WHERE _date_partition = "2022-01-01"
+  WHERE _date_partition >= "2022-01-01"
 )
 
 -- Begin apps
