@@ -3,7 +3,7 @@ WITH BASE AS (
     *
   FROM
     logee-data-prod.logee_datalake_raw_production.visibility_dma_logee_drivers
-  WHERE _date_partition >= "2022-06-08"
+  WHERE _date_partition >= "2022-01-01"
 )
 
 SELECT
