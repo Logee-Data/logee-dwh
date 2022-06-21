@@ -127,10 +127,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-/.idea/logee-dwh.iml
-/.idea/misc.xml
-/.idea/modules.xml
-/.idea/inspectionProfiles/profiles_settings.xml
-/.idea/inspectionProfiles/Project_Default.xml
-/.idea/sqldialects.xml
-/.idea/vcs.xml
+
+# IDE related files
+.idea
+.DS_Store
