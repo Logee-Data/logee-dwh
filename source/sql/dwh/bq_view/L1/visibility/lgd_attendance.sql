@@ -13,8 +13,8 @@ WITH BASE AS (
       JSON_EXTRACT_SCALAR(pre_track_activities, '$.type') AS track_activities_type,
       CAST(JSON_EXTRACT_SCALAR(pre_track_activities, '$.timestamp') AS TIMESTAMP) AS track_activities_timestamp,
       STRUCT(
-        JSON_EXTRACT(pre_track_activities, '$.location.lat') AS location_lat,
-        JSON_EXTRACT(pre_track_activities, '$.location.long') AS location_long
+        JSON_EXTRACT(pre_track_activities, '$.location.lat') AS lat,
+        JSON_EXTRACT(pre_track_activities, '$.location.long') AS long
       ) AS location
     )
   ) AS track_activities
@@ -30,11 +30,11 @@ WITH BASE AS (
   ARRAY_AGG(
     STRUCT(
       REPLACE(JSON_EXTRACT(pre_attendances, '$.status'),'"','') AS attendances_status,
-      CAST(JSON_EXTRACT_SCALAR(pre_attendances, '$.date') AS TIMESTAMP) AS attendances_date,
+      DATE(JSON_EXTRACT_SCALAR(pre_attendances, '$.date')) AS attendances_date,
       STRUCT(
         REPLACE(JSON_EXTRACT(pre_attendances, '$.location.address'),'"','') AS attendances_location_address,
-        JSON_EXTRACT(pre_attendances, '$.location.lat') AS attendances_location_lat,
-        JSON_EXTRACT(pre_attendances, '$.location.long') AS attendances_location_long
+        JSON_EXTRACT(pre_attendances, '$.location.lat') AS lat,
+        JSON_EXTRACT(pre_attendances, '$.location.long') AS long
       ) AS location
     ) 
   ) AS attendances  
@@ -51,7 +51,7 @@ SELECT
   REPLACE(JSON_EXTRACT(data, '$.status'),'"','') AS status,
   B.track_activities,
   C.attendances,
-  CAST(JSON_EXTRACT_SCALAR(data, '$.date') AS TIMESTAMP) AS date,
+  DATE(JSON_EXTRACT_SCALAR(data, '$.date')) AS date,
   CAST(JSON_EXTRACT(data, '$.isDeleted') AS BOOLEAN) AS is_deleted,
   REPLACE(JSON_EXTRACT(data, '$.createdBy'),'"','') AS created_by,
   CAST(JSON_EXTRACT_SCALAR(data, '$.createdAt') AS TIMESTAMP) AS created_at,
