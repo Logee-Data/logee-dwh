@@ -2,7 +2,7 @@ WITH base AS (
   SELECT
     *
   FROM
-    `logee-data-dev.logee_datalake_raw_development.visibility_dma_logee_deliverydetails`
+    `logee-data-prod.logee_datalake_raw_production.visibility_dma_logee_deliverydetails`
   WHERE
     _date_partition >= "2022-01-01"
 )
