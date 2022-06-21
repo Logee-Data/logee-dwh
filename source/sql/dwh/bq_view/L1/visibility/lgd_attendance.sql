@@ -13,8 +13,8 @@ WITH BASE AS (
       JSON_EXTRACT_SCALAR(pre_track_activities, '$.type') AS track_activities_type,
       CAST(JSON_EXTRACT_SCALAR(pre_track_activities, '$.timestamp') AS TIMESTAMP) AS track_activities_timestamp,
       STRUCT(
-        JSON_EXTRACT(pre_track_activities, '$.location.lat') AS lat,
-        JSON_EXTRACT(pre_track_activities, '$.location.long') AS long
+        IF(REPLACE(JSON_EXTRACT(pre_track_activities, '$.location.lat'), '"', '') = '', NULL, CAST(REPLACE(JSON_EXTRACT(pre_track_activities, '$.location.lat'), '"', '') AS FLOAT64)) AS lat,
+        IF(REPLACE(JSON_EXTRACT(pre_track_activities, '$.location.long'), '"', '') = '', NULL, CAST(REPLACE(JSON_EXTRACT(pre_track_activities, '$.location.long'), '"', '') AS FLOAT64)) AS long
       ) AS location
     )
   ) AS track_activities
@@ -33,8 +33,8 @@ WITH BASE AS (
       DATE(JSON_EXTRACT_SCALAR(pre_attendances, '$.date')) AS attendances_date,
       STRUCT(
         REPLACE(JSON_EXTRACT(pre_attendances, '$.location.address'),'"','') AS attendances_location_address,
-        JSON_EXTRACT(pre_attendances, '$.location.lat') AS lat,
-        JSON_EXTRACT(pre_attendances, '$.location.long') AS long
+        IF(REPLACE(JSON_EXTRACT(pre_attendances, '$.location.lat'), '"', '') = '', NULL, CAST(REPLACE(JSON_EXTRACT(pre_attendances, '$.location.lat'), '"', '') AS FLOAT64)) AS lat,
+        IF(REPLACE(JSON_EXTRACT(pre_attendances, '$.location.long'), '"', '') = '', NULL, CAST(REPLACE(JSON_EXTRACT(pre_attendances, '$.location.long'), '"', '') AS FLOAT64)) AS long
       ) AS location
     ) 
   ) AS attendances  
