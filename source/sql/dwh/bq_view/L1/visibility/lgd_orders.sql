@@ -1,8 +1,12 @@
 WITH 
 
 base AS (
-  SELECT * FROM `logee-data-prod.logee_datalake_raw_production.visibility_lgd_orders`
-  WHERE _date_partition >= '2022-01-01'
+  SELECT
+    *
+  FROM
+    `logee-data-prod.logee_datalake_raw_production.visibility_lgd_orders`
+  WHERE
+    _date_partition >= '2022-01-01'
 )
 
 -- BEGIN STORE.STORE_IMAGES
@@ -15,16 +19,18 @@ base AS (
       JSON_EXTRACT_SCALAR(store_images, '$.image') AS image,
       CAST(JSON_EXTRACT_SCALAR(store_images, '$.mainImage') AS BOOL) AS main_image
     ) AS store_images
-  FROM base,
+  FROM 
+    base,
     UNNEST(JSON_EXTRACT_ARRAY(JSON_EXTRACT(data, '$.store'), '$.storeImages')) AS store_images
 )
 
 ,store_images AS (
-  select
+  SELECT
     data,
     published_timestamp,
     ARRAY_AGG(store_images) AS store_images
-  from pre_store_images
+  FROM
+    pre_store_images
   GROUP BY 1, 2
 )
 
@@ -39,8 +45,9 @@ base AS (
     ARRAY_AGG (
       REPLACE(apps, '"', '')
     ) AS apps
-  FROM base,
-  UNNEST(JSON_EXTRACT_ARRAY(data, '$.store.apps')) AS apps
+  FROM
+    base,
+    UNNEST(JSON_EXTRACT_ARRAY(data, '$.store.apps')) AS apps
   GROUP BY 1,2
 )
 
@@ -55,7 +62,7 @@ base AS (
     STRUCT(
       JSON_EXTRACT_SCALAR(list_address, '$.storeName') AS store_name,
       IF(REPLACE(JSON_EXTRACT_SCALAR(list_address, '$.recipientName'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT_SCALAR(list_address, '$.recipientName'), '"', '')) AS recipient_name,
-      CAST(JSON_EXTRACT_SCALAR(list_address, '$.phoneNumber') AS INT64) AS phone_number,
+      JSON_EXTRACT_SCALAR(list_address, '$.phoneNumber') AS phone_number,
       JSON_EXTRACT_SCALAR(list_address, '$.province') AS province,
       JSON_EXTRACT_SCALAR(list_address, '$.provinceId') AS province_id,
       JSON_EXTRACT_SCALAR(list_address, '$.city') AS city,
@@ -69,13 +76,14 @@ base AS (
       JSON_EXTRACT_SCALAR(list_address, '$.address') AS address,
       JSON_EXTRACT_SCALAR(list_address, '$.mainAddress') AS main_address,
       IF(JSON_EXTRACT_SCALAR(list_address, '$.externalId') = "", NULL, JSON_EXTRACT_SCALAR(list_address, '$.externalId')) AS external_id,
-      JSON_EXTRACT_SCALAR(list_address, '$.lat') AS lat,
-      JSON_EXTRACT_SCALAR(list_address, '$.long') AS long,
+      CAST(JSON_EXTRACT_SCALAR(list_address, '$.lat') AS FLOAT64) AS lat,
+      CAST(JSON_EXTRACT_SCALAR(list_address, '$.long') AS FLOAT64) AS long,
       CAST(JSON_EXTRACT_SCALAR(list_address, '$.isFulfillmentProcess') AS BOOL) AS is_fulfillment_process,
       JSON_EXTRACT_SCALAR(list_address, '$.addressId') AS address_id,
       IF(JSON_EXTRACT_SCALAR(list_address, '$.addressMark') IN ("", "\"\""), NULL, JSON_EXTRACT_SCALAR(list_address, '$.addressMark')) AS address_mark
     ) AS list_address
-  FROM base,
+  FROM
+    base,
     UNNEST(JSON_EXTRACT_ARRAY(JSON_EXTRACT(data, '$.store'), '$.listAddress')) AS list_address
 )
 
@@ -83,8 +91,11 @@ base AS (
   SELECT
     data,
     published_timestamp,
-    ARRAY_AGG(list_address) AS list_address
-  FROM pre_list_address
+    ARRAY_AGG(
+      list_address
+    ) AS list_address
+  FROM
+    pre_list_address
   GROUP BY 1, 2
 )
 
@@ -99,7 +110,7 @@ base AS (
     STRUCT(
       JSON_EXTRACT_SCALAR(data, '$.store.mainAddress.storeName') AS store_name,
       IF(REPLACE(JSON_EXTRACT_SCALAR(data, '$.store.mainAddress.recipientName'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT_SCALAR(data, '$.store.mainAddress.recipientName'), '"', ''))  AS recipient_name,
-      CAST(JSON_EXTRACT_SCALAR(data, '$.store.mainAddress.phoneNumber') AS INT64) AS phone_number,
+      JSON_EXTRACT_SCALAR(data, '$.store.mainAddress.phoneNumber') AS phone_number,
       JSON_EXTRACT_SCALAR(data, '$.store.mainAddress.province') AS province,
       JSON_EXTRACT_SCALAR(data, '$.store.mainAddress.provinceId	') AS province_id,
       JSON_EXTRACT_SCALAR(data, '$.store.mainAddress.city') AS city,
@@ -113,13 +124,14 @@ base AS (
       JSON_EXTRACT_SCALAR(data, '$.store.mainAddress.address') AS address,
       JSON_EXTRACT_SCALAR(data, '$.store.mainAddress.mainAddress') AS main_address,
       IF(JSON_EXTRACT_SCALAR(data, '$.store.mainAddress.externalId') = "", NULL, JSON_EXTRACT_SCALAR(data, '$.store.mainAddress.externalId')) AS external_id,
-      JSON_EXTRACT_SCALAR(data, '$.store.mainAddress.lat') AS lat,
-      JSON_EXTRACT_SCALAR(data, '$.store.mainAddress.long') AS long,
+      CAST(JSON_EXTRACT_SCALAR(data, '$.store.mainAddress.lat') AS FLOAT64) AS lat,
+      CAST(JSON_EXTRACT_SCALAR(data, '$.store.mainAddress.long') AS FLOAT64) AS long,
       CAST(JSON_EXTRACT_SCALAR(data, '$.store.mainAddress.isFulfillmentProcess') AS BOOL) AS is_fulfillment_process,
       JSON_EXTRACT_SCALAR(data, '$.store.mainAddress.addressId') AS address_id,
       IF(JSON_EXTRACT_SCALAR(data, '$.store.mainAddress.addressMark') IN ("", "\"\""), NULL, JSON_EXTRACT(data, '$.store.mainAddress.addressMark')) AS address_mark
     ) AS main_address
-  FROM base
+  FROM
+    base
 )
 -- END STORE.MAIN_ADDRESS
 
@@ -131,7 +143,7 @@ base AS (
     ts AS published_timestamp,
     STRUCT (
       REPLACE(JSON_EXTRACT_SCALAR(data, '$.store.storeOwner.ownerName'), '"', '') AS owner_name,
-      CAST(REPLACE(JSON_EXTRACT_SCALAR(data, '$.store.storeOwner.ownerPhoneNumber'), '"', '') AS INT64) AS owner_phone_number,
+      REPLACE(JSON_EXTRACT_SCALAR(data, '$.store.storeOwner.ownerPhoneNumber'), '"', '') AS owner_phone_number,
       STRUCT (
         REPLACE(JSON_EXTRACT_SCALAR(data, '$.store.storeOwner.ownerAddress.province'), '"', '') AS province,
         REPLACE(JSON_EXTRACT_SCALAR(data, '$.store.storeOwner.ownerAddress.provinceId'), '"', '') AS province_id,
@@ -144,8 +156,8 @@ base AS (
         REPLACE(JSON_EXTRACT_SCALAR(data, '$.store.storeOwner.ownerAddress.zipCode'), '"', '') AS zip_code,
         REPLACE(JSON_EXTRACT_SCALAR(data, '$.store.storeOwner.ownerAddress.zipCodeId'), '"', '') AS zip_code_id,
         REPLACE(JSON_EXTRACT_SCALAR(data, '$.store.storeOwner.ownerAddress.address'), '"', '') AS address,
-        REPLACE(JSON_EXTRACT_SCALAR(data, '$.store.storeOwner.ownerAddress.lat'), '"', '') AS lat,
-        REPLACE(JSON_EXTRACT_SCALAR(data, '$.store.storeOwner.ownerAddress.long'), '"', '') AS long
+        CAST(REPLACE(JSON_EXTRACT_SCALAR(data, '$.store.storeOwner.ownerAddress.lat'), '"', '') AS FLOAT64) AS lat,
+        CAST(REPLACE(JSON_EXTRACT_SCALAR(data, '$.store.storeOwner.ownerAddress.long'), '"', '') AS FLOAT64) AS long
       ) AS owner_address
     ) AS store_owner
   FROM
@@ -163,7 +175,8 @@ base AS (
     STRUCT (
       REPLACE(JSON_EXTRACT_SCALAR(data, '$.store.metadata.firstOrderId'), '"', '') AS first_order_id
     ) AS metadata
-  FROM base
+  FROM
+    base
 )
 
 -- END STORE.METADATA
@@ -202,7 +215,7 @@ base AS (
       JSON_EXTRACT_SCALAR(A.data, '$.store.userType') AS user_type,
       F.metadata,
       CAST(JSON_EXTRACT_SCALAR(A.data, '$.store.isActive') AS BOOL) AS is_active,
-      JSON_EXTRACT_SCALAR(A.data, '$.store.username') AS username
+      IF(JSON_EXTRACT_SCALAR(A.data, '$.store.username') = "", NULL, JSON_EXTRACT_SCALAR(A.data, '$.store.username')) AS username
     ) AS store
   FROM base A
     LEFT JOIN store_images B
@@ -281,8 +294,9 @@ base AS (
     ARRAY_AGG (
       REPLACE(procedure_steps, '"', '')
     ) AS procedure_steps
-  FROM payment_procedure_1,
-  UNNEST(JSON_EXTRACT_ARRAY(JSON_EXTRACT(payment_procedure, '$.procedureSteps'))) AS procedure_steps
+  FROM
+    payment_procedure_1,
+    UNNEST(JSON_EXTRACT_ARRAY(JSON_EXTRACT(payment_procedure, '$.procedureSteps'))) AS procedure_steps
   GROUP BY 1,2
 )
 
@@ -340,9 +354,9 @@ base AS (
     ) AS payment
   FROM
     base A
-  LEFT JOIN payment_procedure B
-  ON A.data = B.data
-  AND A.ts = B.published_timestamp
+    LEFT JOIN payment_procedure B
+    ON A.data = B.data
+    AND A.ts = B.published_timestamp
 )
 
 -- END PAYMENT
@@ -434,23 +448,23 @@ base AS (
         C.sub_product_images AS sub_product_images,
         CAST(REPLACE(JSON_EXTRACT(order_product, '$.subProductMinimumOrder'), '"', '') AS INT64) AS sub_product_minimum_order,
         REPLACE(JSON_EXTRACT(order_product, '$.subProductName'), '"', '') AS sub_product_name,
-        CAST(REPLACE(JSON_EXTRACT(order_product, '$.subProductPrice'), '"', '') AS INT64) AS sub_product_price,
+        CAST(REPLACE(JSON_EXTRACT(order_product, '$.subProductPrice'), '"', '') AS FLOAT64) AS sub_product_price,
         CAST(REPLACE(JSON_EXTRACT(order_product, '$.subProductStock'), '"', '') AS INT64) AS sub_product_stock,
         REPLACE(JSON_EXTRACT(order_product, '$.subProductUnit'), '"', '') AS sub_product_unit,
         D.sub_product_variant AS sub_product_variant,
-        CAST(REPLACE(JSON_EXTRACT(order_product, '$.subProductWeight'), '"', '') AS INT64) AS sub_product_weight,
+        CAST(REPLACE(JSON_EXTRACT(order_product, '$.subProductWeight'), '"', '') AS FLOAT64) AS sub_product_weight,
         IF(REPLACE(JSON_EXTRACT(order_product, '$.subProductsSize'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(order_product, '$.subProductsSize'), '"', '')) AS sub_product_size,
         CAST(REPLACE(JSON_EXTRACT(order_product, '$.subProductStockOnHold'), '"', '') AS INT64) AS sub_product_stock_on_hold,
         CAST(REPLACE(JSON_EXTRACT(order_product, '$.stockModifiedTimeStamp'), '"', '') AS TIMESTAMP) AS stock_modified_timestamp,
         IF(REPLACE(JSON_EXTRACT(order_product, '$.subProductOrderStockStatus'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(order_product, '$.subProductOrderStockStatus'), '"', '')) AS sub_product_minimum_order_stock_status,
         IF(REPLACE(JSON_EXTRACT(order_product, '$.subProductMinimumOrderStatus'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(order_product, '$.subProductMinimumOrderStatus'), '"', '')) AS sub_product_minimum_order_status,
         REPLACE(JSON_EXTRACT(order_product, '$.productName'), '"', '') AS product_name,
-        CAST(REPLACE(JSON_EXTRACT(order_product, '$.subProductDiscountAmount'), '"', '') AS INT64) AS sub_product_discount_amount,
-        CAST(REPLACE(JSON_EXTRACT(order_product, '$.subProductTotalDiscountAmount'), '"', '') AS INT64) AS sub_product_total_discount_amount,
-        CAST(REPLACE(JSON_EXTRACT(order_product, '$.subProductDiscountPrice'), '"', '') AS INT64) AS sub_product_discount_price,
-        CAST(REPLACE(JSON_EXTRACT(order_product, '$.subProductTotalDiscountPrice'), '"', '') AS INT64) AS sub_product_total_discount_price,
-        CAST(REPLACE(JSON_EXTRACT(order_product, '$.subProductOrderAmount'), '"', '') AS INT64) AS sub_product_order_amount,
-        CAST(REPLACE(JSON_EXTRACT(order_product, '$.subProductTotalPrice'), '"', '') AS INT64) AS sub_product_total_price,
+        CAST(REPLACE(JSON_EXTRACT(order_product, '$.subProductDiscountAmount'), '"', '') AS FLOAT64) AS sub_product_discount_amount,
+        CAST(REPLACE(JSON_EXTRACT(order_product, '$.subProductTotalDiscountAmount'), '"', '') AS FLOAT64) AS sub_product_total_discount_amount,
+        CAST(REPLACE(JSON_EXTRACT(order_product, '$.subProductDiscountPrice'), '"', '') AS FLOAT64) AS sub_product_discount_price,
+        CAST(REPLACE(JSON_EXTRACT(order_product, '$.subProductTotalDiscountPrice'), '"', '') AS FLOAT64) AS sub_product_total_discount_price,
+        CAST(REPLACE(JSON_EXTRACT(order_product, '$.subProductOrderAmount'), '"', '') AS FLOAT64) AS sub_product_order_amount,
+        CAST(REPLACE(JSON_EXTRACT(order_product, '$.subProductTotalPrice'), '"', '') AS FLOAT64) AS sub_product_total_price,
         IF(REPLACE(JSON_EXTRACT(order_product, '$.subProductOrderNotes'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(order_product, '$.subProductOrderNotes'), '"', '')) AS sub_product_order_notes
       )
     ) AS order_product
@@ -472,7 +486,7 @@ base AS (
 
 -- END ORDER_PRODUCT
 
-SELECT 
+SELECT
   JSON_EXTRACT_SCALAR(A.data, '$.orderId') AS order_id,
   JSON_EXTRACT_SCALAR(A.data, '$.invoiceId') AS invoice_id,
   JSON_EXTRACT_SCALAR(A.data, '$.companyId') AS company_id,
@@ -489,7 +503,7 @@ SELECT
   IF(JSON_EXTRACT_SCALAR(A.data, '$.urlSalesOrderPdf') IN ("", "\"\""), NULL, JSON_EXTRACT_SCALAR(A.data, '$.urlSalesOrderPdf')) AS url_sales_order_pdf,
   IF(JSON_EXTRACT_SCALAR(A.data, '$.companyName') IN ("", "\"\""), NULL, JSON_EXTRACT_SCALAR(A.data, '$.companyName')) AS company_name,
   IF(JSON_EXTRACT_SCALAR(A.data, '$.billCode') IN ("", "\"\""), NULL, JSON_EXTRACT_SCALAR(A.data, '$.billCode')) AS bill_code,
-  CAST(JSON_EXTRACT_SCALAR(A.data, '$.orderDiscount') AS INT64) AS order_discount,
+  CAST(JSON_EXTRACT_SCALAR(A.data, '$.orderDiscount') AS FLOAT64) AS order_discount,
   JSON_EXTRACT_SCALAR(A.data, '$.orderStatus') AS order_status,
   IF(REPLACE(JSON_EXTRACT_SCALAR(A.data, '$.urlInvoicePdf'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT_SCALAR(A.data, '$.urlInvoicePdf'), '"', ''))  AS url_invoice_pdf,
   CAST(JSON_EXTRACT_SCALAR(A.data, '$.isFulfillmentProcess') AS BOOL) AS is_fullfilment_process,
@@ -518,7 +532,7 @@ SELECT
   STRUCT (
     REPLACE(JSON_EXTRACT(A.data, '$.orderAddress.storeName'), '"', '') AS store_name,
     IF(REPLACE(JSON_EXTRACT(A.data, '$.orderAddress.recipientName'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT_SCALAR(A.data, '$.orderAddress.recipientName'), '"', ''))  AS recipient_name,
-    CAST(REPLACE(JSON_EXTRACT(A.data, '$.orderAddress.phoneNumber'), '"', '') AS INT64) AS phone_number,
+    REPLACE(JSON_EXTRACT(A.data, '$.orderAddress.phoneNumber'), '"', '') AS phone_number,
     REPLACE(JSON_EXTRACT(A.data, '$.orderAddress.province	'), '"', '') AS province,
     REPLACE(JSON_EXTRACT(A.data, '$.orderAddress.provinceId'), '"', '') AS province_id,
     REPLACE(JSON_EXTRACT(A.data, '$.orderAddress.city'), '"', '') AS city,
@@ -532,11 +546,11 @@ SELECT
     REPLACE(JSON_EXTRACT(A.data, '$.orderAddress.address'), '"', '') AS address,
     REPLACE(JSON_EXTRACT(A.data, '$.orderAddress.mainAddress'), '"', '') AS main_address,
     IF(REPLACE(JSON_EXTRACT(A.data, '$.orderAddress.externalId'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(A.data, '$.orderAddress.externalId'), '"', '')) AS external_id,
-    REPLACE(JSON_EXTRACT(A.data, '$.orderAddress.lat'), '"', '') AS lat,
-    REPLACE(JSON_EXTRACT(A.data, '$.orderAddress.long'), '"', '') AS long,
+    CAST(REPLACE(JSON_EXTRACT(A.data, '$.orderAddress.lat'), '"', '') AS FLOAT64) AS lat,
+    CAST(REPLACE(JSON_EXTRACT(A.data, '$.orderAddress.long'), '"', '') AS FLOAT64) AS long,
     CAST(REPLACE(JSON_EXTRACT(A.data, '$.orderAddress.isFulfillmentProcess'), '"', '') AS BOOL) AS is_fulfillment_process,
     REPLACE(JSON_EXTRACT(A.data, '$.orderAddress.addressId'), '"', '') AS address_id,
-    IF(JSON_EXTRACT(A.data, '$.orderAddress.addressMark') = "", NULL, JSON_EXTRACT(A.data, '$.orderAddress.addressMark')) AS address_mark
+    IF(JSON_EXTRACT_SCALAR(A.data, '$.orderAddress.addressMark') = "", NULL, JSON_EXTRACT_SCALAR(A.data, '$.orderAddress.addressMark')) AS address_mark
   ) AS order_address,
   D.payment,
   E.order_product,
@@ -548,16 +562,20 @@ SELECT
   CAST(REPLACE(JSON_EXTRACT(A.data, '$.modifiedAt'), '"', '') AS TIMESTAMP) AS modified_at,
   A.data AS original_data,
   A.ts AS published_timestamp
-FROM base A
+FROM
+  base A
   LEFT JOIN store B
   ON A.data = B.data
   AND A.ts = B.published_timestamp
+
   LEFT JOIN pool_status C
   ON A.data = C.data
   AND A.ts = C.published_timestamp
+
   LEFT JOIN payment D
   ON A.data = D.data
   AND A.ts = D.published_timestamp
+
   LEFT JOIN order_product E
   ON A.data = E.data
   AND A.ts = E.published_timestamp
