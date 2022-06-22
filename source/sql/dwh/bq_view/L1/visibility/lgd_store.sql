@@ -53,7 +53,7 @@ ts AS published_timestamp,
        IF(REPLACE(JSON_EXTRACT(data, '$.storeOwner.ownerAddress.long'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(data, '$.storeOwner.ownerAddress.long'), '"', '')) AS long,
        IF(REPLACE(JSON_EXTRACT(data, '$.storeOwner.ownerAddress.provinceId'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(data, '$.storeOwner.ownerAddress.provinceId'), '"', '')) AS province_id,
        IF(REPLACE(JSON_EXTRACT(data, '$.storeOwner.ownerAddress.province'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(data, '$.storeOwner.ownerAddress.province'), '"', '')) AS province,
-       IF(REPLACE(JSON_EXTRACT(data, '$.storeOwner.ownerAddress.cityId'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(data, '$.storeOwner.ownerAddress.cityId'), '"', '')) AS city_d,
+       IF(REPLACE(JSON_EXTRACT(data, '$.storeOwner.ownerAddress.cityId'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(data, '$.storeOwner.ownerAddress.cityId'), '"', '')) AS city_id,
        IF(REPLACE(JSON_EXTRACT(data, '$.storeOwner.ownerAddress.city'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(data, '$.storeOwner.ownerAddress.city'), '"', '')) AS city,
        IF(REPLACE(JSON_EXTRACT(data, '$.storeOwner.ownerAddress.districtId'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(data, '$.storeOwner.ownerAddress.districtId'), '"', '')) AS district_id,
        IF(REPLACE(JSON_EXTRACT(data, '$.storeOwner.ownerAddress.district'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(data, '$.storeOwner.ownerAddress.district'), '"', '')) AS district,
@@ -99,12 +99,12 @@ FROM base
 -- end storeOwner
 
 select
+ REPLACE(JSON_EXTRACT_SCALAR(A.data, '$.storeId'), '"', '') AS storeId,
 B.list_Address,
   C.store_owner,
   JSON_EXTRACT_SCALAR(A.data, '$.userType') AS user_type,
   JSON_EXTRACT_SCALAR(A.data, '$.companyId') AS company_id,
   IF(REPLACE(JSON_EXTRACT_SCALAR(A.data, '$.username'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(A.data, '$.username'), '"', '')) AS username,
-  JSON_EXTRACT_SCALAR(A.data, '$.externalId') AS external_id,
   IF(REPLACE(JSON_EXTRACT_SCALAR(A.data, '$.externalId'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(A.data, '$.externalId'), '"', '')) AS external_id,
   JSON_EXTRACT_SCALAR(A.data, '$.subAreaId') AS sub_area_id,
   JSON_EXTRACT_SCALAR(A.data, '$.salesId') AS sales_id,
@@ -130,11 +130,17 @@ B.list_Address,
     CAST(REPLACE(JSON_EXTRACT_SCALAR(A.data, '$.mainAddress.mainAddress'), '"', '') AS BOOL) AS main_address,
      IF(REPLACE(JSON_EXTRACT_SCALAR(A.data, '$.mainAddress.addressMark'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(A.data, '$.mainAddress.addressMark'), '"', '')) AS address_mark,
     CAST(REPLACE(JSON_EXTRACT_SCALAR(A.data, '$.mainAddress.isFulfillmentProcess'), '"', '') AS BOOL) AS is_fulfillment_process
-  ) AS mainAddress,
+  ) AS main_address,
+   REPLACE(JSON_EXTRACT(A.data, '$.status'), '"', '')AS status,
+   IF(REPLACE(JSON_EXTRACT(A.data, '$.assignedTaskId'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(A.data, '$.assignedTaskId'), '"', '')) AS assigned_task_id,
   D.apps,
+  REPLACE(JSON_EXTRACT(A.data, '$.createdBy'), '"', '')AS created_by,
   CAST(REPLACE(JSON_EXTRACT(A.data, '$.createdAt'), '"', '') AS TIMESTAMP) AS created_at,
   CAST(REPLACE(JSON_EXTRACT(A.data, '$.modifiedAt'), '"', '') AS TIMESTAMP) AS modified_at,
   REPLACE(JSON_EXTRACT(A.data, '$.modifiedBy'), '"', '') AS modified_by,
+   CAST(REPLACE(JSON_EXTRACT_SCALAR(A.data, '$.isDeleted'), '"', '') AS BOOL) AS isDeleted,
+    CAST(REPLACE(JSON_EXTRACT_SCALAR(A.data, '$.isActive'), '"', '') AS BOOL) AS isActive,
+  
   A.data AS original_data,
   A.ts AS published_timestamp
 from base A
