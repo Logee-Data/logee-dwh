@@ -45,8 +45,8 @@ WITH base AS (
         IF(JSON_EXTRACT_SCALAR(destination_list, '$.itemCategoryName') = "", NULL, JSON_EXTRACT_SCALAR(destination_list, '$.itemCategoryName')) AS item_category_name,
         IF(JSON_EXTRACT_SCALAR(destination_list, '$.destinationAddress') = "", NULL, JSON_EXTRACT_SCALAR(destination_list, '$.destinationAddress')) AS destination_address,
         IF(JSON_EXTRACT_SCALAR(destination_list, '$.destinationPicName') = "", NULL, JSON_EXTRACT_SCALAR(destination_list, '$.destinationPicName')) AS destination_pic_name,
-        IF(JSON_EXTRACT_SCALAR(destination_list, '$.destinationPicName') = "", NULL, JSON_EXTRACT_SCALAR(destination_list, '$.destinationLatitude')) AS destination_latitude,
-        IF(JSON_EXTRACT_SCALAR(destination_list, '$.destinationPicName') = "", NULL, JSON_EXTRACT_SCALAR(destination_list, '$.destinationLongitude')) AS destination_longitude,
+        CAST(IF(JSON_EXTRACT_SCALAR(destination_list, '$.destinationLatitude') = "", NULL, JSON_EXTRACT_SCALAR(destination_list, '$.destinationLatitude')) AS FLOAT64) AS destination_latitude,
+        CAST(IF(JSON_EXTRACT_SCALAR(destination_list, '$.destinationLongitude') = "", NULL, JSON_EXTRACT_SCALAR(destination_list, '$.destinationLongitude')) AS FLOAT64) AS destination_longitude,
         IF(JSON_EXTRACT_SCALAR(destination_list, '$.destinationLocation') = "", NULL, JSON_EXTRACT_SCALAR(destination_list, '$.destinationLocation')) AS destination_location,
         IF(JSON_EXTRACT_SCALAR(destination_list, '$.destinationPicPhone') = "", NULL, JSON_EXTRACT_SCALAR(destination_list, '$.destinationPicPhone')) AS destination_pic_phone,
       )
