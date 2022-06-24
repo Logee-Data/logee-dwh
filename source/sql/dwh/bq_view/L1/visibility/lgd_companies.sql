@@ -183,6 +183,7 @@ FROM base
 -- END APPS
 
 SELECT 
+  JSON_EXTRACT_SCALAR(A.data, '$.companyId') AS company_id,
   JSON_EXTRACT_SCALAR(A.data, '$.companyName') AS company_name,
   JSON_EXTRACT_SCALAR(A.data, '$.companyPhoneNumber') AS company_phone_number,
   JSON_EXTRACT_SCALAR(A.data, '$.companyAddress') AS company_address,
