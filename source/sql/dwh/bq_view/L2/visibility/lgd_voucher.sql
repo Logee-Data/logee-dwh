@@ -77,6 +77,18 @@ WITH check AS (
   ) AS quality_check
   FROM `logee-data-prod.L1_visibility.lgd_voucher` 
   WHERE voucher_status IS NULL or voucher_status = ''
+  
+  UNION ALL
+  
+  SELECT
+    original_data,
+    published_timestamp,
+    STRUCT(
+      'is_deleted' AS column,
+      IF(is_deleted IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
+    ) AS quality_check
+  FROM `logee-data-prod.L1_visibility.lgd_voucher` 
+  WHERE is_deleted IS NULL
 )
 
 
