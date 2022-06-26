@@ -99,7 +99,7 @@ FROM base
 -- end storeOwner
 
 select
- REPLACE(JSON_EXTRACT_SCALAR(A.data, '$.storeId'), '"', '') AS storeId,
+ REPLACE(JSON_EXTRACT_SCALAR(A.data, '$.storeId'), '"', '') AS store_id,
 B.list_Address,
   C.store_owner,
   JSON_EXTRACT_SCALAR(A.data, '$.userType') AS user_type,
