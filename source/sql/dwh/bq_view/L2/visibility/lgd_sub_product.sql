@@ -161,21 +161,8 @@ WITH check AS (
     published_timestamp,
     STRUCT(
       'sub_product_stock' AS column,
-      "Contains zero sub_product_stock when value of is_on_shelf is TRUE" AS notes
+      "Contains zero sub_product_stock when value of on_shelf is TRUE" AS notes
     ) quality_check
-  FROM `logee-data-prod.L1_visibility.lgd_sub_product`
-  WHERE
-    sub_product_stock = 0 AND on_shelf = TRUE
-
-  UNION ALL
-
-  SELECT
-    original_data,
-    published_timestamp,
-    STRUCT(
-      'on_shelf' AS column,
-      "on_shelf is TRUE when value of sub_product_stock equals zero" AS notes
-    ) AS quality_check
   FROM `logee-data-prod.L1_visibility.lgd_sub_product`
   WHERE
     sub_product_stock = 0 AND on_shelf = TRUE
@@ -192,6 +179,45 @@ WITH check AS (
   FROM `logee-data-prod.L1_visibility.lgd_sub_product`
   WHERE
     sub_product_stock > 0 AND on_shelf = FALSE
+
+  UNION ALL
+
+  SELECT
+    original_data,
+    published_timestamp,
+    STRUCT(
+      'sub_product_stock' AS column,
+      "Contains zero sub_product_stock when value of product_on_shelf is TRUE" AS notes
+    ) quality_check
+  FROM `logee-data-prod.L1_visibility.lgd_sub_product`
+  WHERE
+    sub_product_stock = 0 AND product_on_shelf = TRUE
+
+  UNION ALL
+
+SELECT
+    original_data,
+    published_timestamp,
+    STRUCT(
+      'sub_product_stock' AS column,
+      "Contains a number of sub_product_stock when value of product_on_shelf is FALSE" AS notes
+    ) quality_check
+  FROM `logee-data-prod.L1_visibility.lgd_sub_product`
+  WHERE
+    sub_product_stock > 0 AND product_on_shelf = FALSE
+
+  UNION ALL
+  
+  SELECT
+    original_data,
+    published_timestamp,
+    STRUCT(
+      'on_shelf' AS column,
+      "on_shelf is TRUE when value of sub_product_stock equals zero" AS notes
+    ) AS quality_check
+  FROM `logee-data-prod.L1_visibility.lgd_sub_product`
+  WHERE
+    sub_product_stock = 0 AND on_shelf = TRUE
 
   UNION ALL
 
@@ -291,18 +317,6 @@ WITH check AS (
     ) AS quality_check
   FROM `logee-data-prod.L1_visibility.lgd_sub_product`
   WHERE is_bonus IS NULL 
-
-  UNION ALL
-
-  SELECT
-    original_data,
-    published_timestamp,
-    STRUCT(
-      'is_deleted' AS column,
-      IF(is_deleted IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
-    ) AS quality_check
-  FROM `logee-data-prod.L1_visibility.lgd_sub_product`
-  WHERE is_deleted IS NULL 
 
 )
 
