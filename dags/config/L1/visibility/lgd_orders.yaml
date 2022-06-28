@@ -1,0 +1,5 @@
+project: logee-data-prod
+dataset_id: L1_visibility
+table_id: lgd_orders
+sql: ./source/sql/dwh/L1/visibility/lgd_orders.sql
+schedule: 0 17 * * *
