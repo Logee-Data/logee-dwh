@@ -48,7 +48,7 @@ WITH base as(
         TO_HEX(SHA256(main_address.phone_number)) AS phone_number
       ) AS main_address
     )
-  FROM `logee-data-dev.L1_visibility_playground.lgd_store`
+  FROM `logee-data-prod.L1_visibility_playground.lgd_store`
 )
 
 ,check AS (
