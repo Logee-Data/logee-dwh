@@ -7,7 +7,7 @@ SELECT
   CAST(JSON_EXTRACT(data, '$.price') AS FLOAT64)  AS price,
   CAST(JSON_EXTRACT(data, '$.konstanta') AS INT64) AS konstanta,
   CAST(JSON_EXTRACT(data, '$.revenue_sharing') AS FLOAT64) AS revenue_sharing,
-  ts AS published_timestamp
+  CAST(ts AS TIMESTAMP) AS published_timestamp
 FROM `logee-data-prod.logee_datalake_raw_production.visibility_lgd_service_fee_pip` 
 WHERE 
   _date_partition IN ('{{ ds }}', '{{ next_ds }}')
