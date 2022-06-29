@@ -114,7 +114,7 @@ WITH base as(
     published_timestamp,
 
     STRUCT(
-      'provinuser_idce_name' AS column,
+      'user_id' AS column,
       IF(user_id IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
     ) AS quality_check
   FROM base
@@ -385,11 +385,11 @@ WITH base as(
     original_data,
     published_timestamp,
     STRUCT(
-      'is_deleted' AS column,
-      IF(is_deleted IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
+      'companyGroup_id' AS column,
+      IF(companyGroup_id IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
     ) AS quality_check
   FROM base
-  WHERE is_deleted IS NULL
+  WHERE companyGroup_id IS NULL or settings.catalogue_product_url = ''
 
 )
 
