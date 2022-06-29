@@ -7,12 +7,14 @@ from airflow.providers.google.cloud.operators.bigquery import (
     BigQueryExecuteQueryOperator
 )
 
+import pathlib
 import yaml
 
 all_jobs = list()
 
+dags = str(pathlib.Path(__file__).parent.absolute())
 dataset_folder = [
-    '/'.join(['./config/L1', f]) for f in listdir('./config/L1') if '.' not in f
+    '/'.join([f'{dags}/config/L1', f]) for f in listdir(f'{dags}/config/L1') if '.' not in f
 ]
 
 for i in dataset_folder:
@@ -26,7 +28,7 @@ for i in dataset_folder:
             config_dict = yaml.safe_load(yaml_file)
             yaml_file.close()
 
-        with open(config_dict.get('sql'), 'r') as sql_file:
+        with open(f"{dags}/{config_dict.get('sql')}", 'r') as sql_file:
             sql = sql_file.read()
             sql_file.close()
 
@@ -43,7 +45,8 @@ dag_list = dict()
 
 default_args = {
     'owner': 'data-think-tank',
-    'retry_delay': timedelta(minutes=5)
+    'retry_delay': timedelta(minutes=5),
+    'start_date': datetime(2021, 12, 31, 17)
 }
 
 for job in all_jobs:
@@ -85,7 +88,7 @@ for job in all_jobs:
             "type": "DAY",
             "field": job.get('time_partitioning')
         },
-        label={
+        labels={
             "type": "scheduled",
             "level": "L1",
             "runner": "airflow"
