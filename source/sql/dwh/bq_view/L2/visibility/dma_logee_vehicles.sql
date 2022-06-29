@@ -300,6 +300,19 @@ base AS(
     published_timestamp,
 
     STRUCT(
+      'vehicle_status' AS column,
+      IF(vehicle_status IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
+    ) AS quality_check
+  FROM `logee-data-prod.L1_visibility.dma_logee_vehicles`
+  WHERE vehicle_status IS NULL
+
+  UNION ALL
+
+  SELECT
+    original_data,
+    published_timestamp,
+
+    STRUCT(
       'item_categories' AS column,
       IF(item_categories IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
     ) AS quality_check
