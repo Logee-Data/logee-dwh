@@ -20,7 +20,7 @@ base AS (
       JSON_EXTRACT_SCALAR(store_images, '$.image') AS image,
       CAST(JSON_EXTRACT_SCALAR(store_images, '$.mainImage') AS BOOL) AS main_image
     ) AS store_images
-  FROM 
+  FROM
     base,
     UNNEST(JSON_EXTRACT_ARRAY(JSON_EXTRACT(data, '$.store'), '$.storeImages')) AS store_images
 )
@@ -278,7 +278,7 @@ base AS (
 -- BEGIN PAYMENT
 
 ,payment_procedure_1 AS (
-  SELECT 
+  SELECT
     data,
     ts AS published_timestamp,
     payment_procedure
@@ -366,123 +366,139 @@ base AS (
 
 ,pre_order_product AS (
   SELECT
-    data,
+    id,
     ts AS published_timestamp,
-    order_product
+    JSON_EXTRACT_ARRAY(data, '$.orderProduct') AS order_product,
   FROM
-    base,
-    UNNEST(JSON_EXTRACT_ARRAY(data, '$.orderProduct')) AS order_product
-  ORDER BY 1
+    base
+)
+
+,unnested_pre_order_product AS (
+  SELECT
+    *,
+    JSON_EXTRACT_SCALAR(sub_order_product, '$.subProductId') AS sub_product_id,
+    JSON_EXTRACT_SCALAR(sub_order_product, '$.brandId') AS brand_id,
+    JSON_EXTRACT_SCALAR(sub_order_product, '$.companyId') AS company_id,
+    CAST(JSON_EXTRACT_SCALAR(sub_order_product, '$.createdAt') AS TIMESTAMP) AS created_at,
+    JSON_EXTRACT_SCALAR(sub_order_product, '$.createdBy') AS created_by,
+    JSON_EXTRACT_SCALAR(sub_order_product, '$.externalId') AS external_id,
+    CAST(JSON_EXTRACT_SCALAR(sub_order_product, '$.isBonus') AS BOOL) AS is_bonus,
+    CAST(JSON_EXTRACT_SCALAR(sub_order_product, '$.isDeleted') AS BOOL) AS is_deleted,
+    CAST(JSON_EXTRACT_SCALAR(sub_order_product, '$.isTax') AS BOOL) AS is_tax,
+    CAST(JSON_EXTRACT_SCALAR(sub_order_product, '$.modifiedAt') AS TIMESTAMP) AS modified_at,
+    JSON_EXTRACT_SCALAR(sub_order_product, '$.modifiedBy') AS modified_by,
+    CAST(JSON_EXTRACT_SCALAR(sub_order_product, '$.onShelf') AS BOOL) AS on_shelf,
+    JSON_EXTRACT_SCALAR(sub_order_product, '$.productId') AS product_id,
+    CAST(JSON_EXTRACT_SCALAR(sub_order_product, '$.productOnShelf') AS BOOL) AS product_on_shelf,
+    JSON_EXTRACT_SCALAR(sub_order_product, '$.subProductDescription') AS sub_product_description,
+    CAST(JSON_EXTRACT_SCALAR(sub_order_product, '$.subProductDiscountPercent') AS FLOAT64) AS sub_product_discount_percent,
+    CAST(JSON_EXTRACT_SCALAR(sub_order_product, '$.subProductMinimumOrder') AS INT64) AS sub_product_minimum_order,
+    JSON_EXTRACT_SCALAR(sub_order_product, '$.subProductName') AS sub_product_name,
+    CAST(JSON_EXTRACT_SCALAR(sub_order_product, '$.subProductPrice') AS FLOAT64) AS sub_product_price,
+    CAST(JSON_EXTRACT_SCALAR(sub_order_product, '$.subProductStock') AS INT64) AS sub_product_stock,
+    JSON_EXTRACT_SCALAR(sub_order_product, '$.subProductUnit') AS sub_product_unit,
+    CAST(JSON_EXTRACT_SCALAR(sub_order_product, '$.subProductWeight') AS FLOAT64) AS sub_product_weight,
+    JSON_EXTRACT_SCALAR(sub_order_product, '$.subProductsSize') AS sub_product_size,
+    CAST(JSON_EXTRACT_SCALAR(sub_order_product, '$.subProductStockOnHold') AS INT64) AS sub_product_stock_on_hold,
+    JSON_EXTRACT_SCALAR(sub_order_product, '$.subProductOrderStockStatus') AS sub_product_order_stock_status,
+    JSON_EXTRACT_SCALAR(sub_order_product, '$.subProductMinimumOrderStatus') AS sub_product_minimum_order_stock_status,
+    JSON_EXTRACT_SCALAR(sub_order_product, '$.productName') AS product_name,
+    CAST(JSON_EXTRACT_SCALAR(sub_order_product, '$.subProductDiscountAmount') AS INT64) AS sub_product_discount_amount,
+    CAST(JSON_EXTRACT_SCALAR(sub_order_product, '$.subProductDiscountPrice') AS FLOAT64) AS sub_product_discount_price,
+    CAST(JSON_EXTRACT_SCALAR(sub_order_product, '$.subProductTotalDiscountPrice') AS FLOAT64) AS sub_product_total_discount_price,
+    CAST(JSON_EXTRACT_SCALAR(sub_order_product, '$.subProductOrderAmount') AS INT64) AS sub_product_order_amount,
+    CAST(JSON_EXTRACT_SCALAR(sub_order_product, '$.subProductTotalPrice') AS FLOAT64) AS sub_product_total_price,
+    JSON_EXTRACT_SCALAR(sub_order_product, '$.subProductOrderNotes') AS sub_product_order_notes,
+
+    -- STRUCT TYPE
+    STRUCT (
+      REPLACE(JSON_EXTRACT(sub_order_product, '$.categoryIds.categoryId'), '"', '') AS category_id,
+      REPLACE(JSON_EXTRACT(sub_order_product, '$.categoryIds.subCategoryId'), '"', '') AS sub_category_id,
+      REPLACE(JSON_EXTRACT(sub_order_product, '$.categoryIds.subSubCategoryId'), '"', '') AS sub_sub_category_id
+    ) AS category_ids,
+
+    JSON_EXTRACT_ARRAY(sub_order_product, '$.subProductImages') AS sub_product_image,
+    JSON_EXTRACT_ARRAY(sub_order_product, '$.subProductVariant') AS sub_product_variant,
+
+    -- NEED CLEANING
+    JSON_EXTRACT_ARRAY(sub_order_product, '$.bookedStock') AS booked_stock
+
+  FROM
+    pre_order_product,
+    UNNEST(order_product) sub_order_product
 )
 
 ,pre_booked_stock AS (
   SELECT
-    data,
+    id,
+    product_id,
+    sub_product_id,
     published_timestamp,
-    ARRAY(
-      SELECT STRUCT (
+    ARRAY_AGG(
+      STRUCT(
         JSON_EXTRACT_SCALAR(booked_stock, '$.orderId') AS order_id,
         JSON_EXTRACT_SCALAR(booked_stock, '$.stock') AS stock
       )
     ) AS booked_stock
   FROM
-    pre_order_product,
-    UNNEST(JSON_EXTRACT_ARRAY(REPLACE(REPLACE(REPLACE(JSON_EXTRACT(order_product, '$.bookedStock'), '\\', ''), '\"[', '['), ']\"', ']'), '$.')) AS booked_stock
-)
-
-,pre_subproduct_images AS (
-  SELECT
-    data,
-    published_timestamp,
-    ARRAY(
-      SELECT
-      REPLACE(sub_product_images, '"', '')
-    ) AS sub_product_images
-  FROM
-    pre_order_product,
-    UNNEST(JSON_EXTRACT_ARRAY(REPLACE(REPLACE(REPLACE(JSON_EXTRACT(order_product, '$.subProductImages'), '\\', ''), '\"[', '['), ']\"', ']'), '$.')) AS sub_product_images
-)
-
-,pre_subproduct_variant AS (
-  SELECT
-    data,
-    published_timestamp,
-    ARRAY(
-      SELECT STRUCT (
-        IF(JSON_EXTRACT_SCALAR(sub_product_variant, '$.variantName') = "", NULL, JSON_EXTRACT_SCALAR(sub_product_variant, '$.variantName')) AS variant_name,
-        IF(JSON_EXTRACT_SCALAR(sub_product_variant, '$.variant') = "", NULL, JSON_EXTRACT_SCALAR(sub_product_variant, '$.variant')) AS variant
-      )
-    ) AS sub_product_variant
-  FROM
-    pre_order_product,
-    UNNEST(JSON_EXTRACT_ARRAY(REPLACE(REPLACE(REPLACE(JSON_EXTRACT(order_product, '$.subProductVariant'), '\\', ''), '\"[', '['), ']\"', ']'), '$.')) AS sub_product_variant
+    unnested_pre_order_product
+    ,UNNEST(booked_stock) AS booked_stock
+  GROUP BY 1, 2, 3, 4
 )
 
 ,order_product AS (
   SELECT
-    A.data,
+    A.id,
     A.published_timestamp,
-    ARRAY_AGG (
-      STRUCT (
-        REPLACE(JSON_EXTRACT(order_product, '$.subProductId'), '"', '') AS subProductId,
-        B.booked_stock AS booked_stock,
-        IF(REPLACE(JSON_EXTRACT(order_product, '$.brandId'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(order_product, '$.brandId'), '"', '')) AS brand_id,
-        STRUCT (
-          REPLACE(JSON_EXTRACT(order_product, '$.categoryIds.categoryId'), '"', '') AS category_id,
-          REPLACE(JSON_EXTRACT(order_product, '$.categoryIds.subCategoryId'), '"', '') AS sub_category_id,
-          REPLACE(JSON_EXTRACT(order_product, '$.categoryIds.subSubCategoryId'), '"', '') AS sub_sub_category_id
-        ) AS category_ids,
-        REPLACE(JSON_EXTRACT(order_product, '$.companyId'), '"', '') AS company_id,
-        CAST(REPLACE(JSON_EXTRACT(order_product, '$.createdAt'), '"', '') AS TIMESTAMP) AS created_at,
-        REPLACE(JSON_EXTRACT(order_product, '$.createdBy'), '"', '') AS created_by,
-        IF(REPLACE(JSON_EXTRACT(order_product, '$.externalId'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(order_product, '$.externalId'), '"', '')) AS external_id,
-        CAST(REPLACE(JSON_EXTRACT(order_product, '$.isBonus'), '"', '') AS BOOL) AS is_bonus,
-        CAST(REPLACE(JSON_EXTRACT(order_product, '$.isDeleted'), '"', '') AS BOOL) AS is_deleted,
-        CAST(REPLACE(JSON_EXTRACT(order_product, '$.isTax'), '"', '') AS BOOL) AS is_tax,
-        CAST(REPLACE(JSON_EXTRACT(order_product, '$.modifiedAt'), '"', '') AS TIMESTAMP) AS modified_at,
-        REPLACE(JSON_EXTRACT(order_product, '$.modifiedBy'), '"', '') AS modified_by,
-        CAST(REPLACE(JSON_EXTRACT(order_product, '$.onShelf'), '"', '') AS BOOL) AS on_shelf,
-        REPLACE(JSON_EXTRACT(order_product, '$.productId'), '"', '') AS product_id,
-        CAST(REPLACE(JSON_EXTRACT(order_product, '$.productOnShelf'), '"', '') AS BOOL) AS product_on_shelf,
-        REPLACE(JSON_EXTRACT(order_product, '$.subProductDescription'), '"', '') AS sub_product_description,
-        CAST(REPLACE(JSON_EXTRACT(order_product, '$.subProductDiscountPercent'), '"', '') AS FLOAT64) AS sub_product_discount_percent,
-        C.sub_product_images AS sub_product_images,
-        CAST(REPLACE(JSON_EXTRACT(order_product, '$.subProductMinimumOrder'), '"', '') AS INT64) AS sub_product_minimum_order,
-        REPLACE(JSON_EXTRACT(order_product, '$.subProductName'), '"', '') AS sub_product_name,
-        CAST(REPLACE(JSON_EXTRACT(order_product, '$.subProductPrice'), '"', '') AS FLOAT64) AS sub_product_price,
-        CAST(REPLACE(JSON_EXTRACT(order_product, '$.subProductStock'), '"', '') AS INT64) AS sub_product_stock,
-        REPLACE(JSON_EXTRACT(order_product, '$.subProductUnit'), '"', '') AS sub_product_unit,
-        D.sub_product_variant AS sub_product_variant,
-        CAST(REPLACE(JSON_EXTRACT(order_product, '$.subProductWeight'), '"', '') AS FLOAT64) AS sub_product_weight,
-        IF(REPLACE(JSON_EXTRACT(order_product, '$.subProductsSize'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(order_product, '$.subProductsSize'), '"', '')) AS sub_product_size,
-        CAST(REPLACE(JSON_EXTRACT(order_product, '$.subProductStockOnHold'), '"', '') AS INT64) AS sub_product_stock_on_hold,
-        CAST(REPLACE(JSON_EXTRACT(order_product, '$.stockModifiedTimeStamp'), '"', '') AS TIMESTAMP) AS stock_modified_timestamp,
-        IF(REPLACE(JSON_EXTRACT(order_product, '$.subProductOrderStockStatus'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(order_product, '$.subProductOrderStockStatus'), '"', '')) AS sub_product_minimum_order_stock_status,
-        IF(REPLACE(JSON_EXTRACT(order_product, '$.subProductMinimumOrderStatus'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(order_product, '$.subProductMinimumOrderStatus'), '"', '')) AS sub_product_minimum_order_status,
-        REPLACE(JSON_EXTRACT(order_product, '$.productName'), '"', '') AS product_name,
-        CAST(REPLACE(JSON_EXTRACT(order_product, '$.subProductDiscountAmount'), '"', '') AS FLOAT64) AS sub_product_discount_amount,
-        CAST(REPLACE(JSON_EXTRACT(order_product, '$.subProductTotalDiscountAmount'), '"', '') AS FLOAT64) AS sub_product_total_discount_amount,
-        CAST(REPLACE(JSON_EXTRACT(order_product, '$.subProductDiscountPrice'), '"', '') AS FLOAT64) AS sub_product_discount_price,
-        CAST(REPLACE(JSON_EXTRACT(order_product, '$.subProductTotalDiscountPrice'), '"', '') AS FLOAT64) AS sub_product_total_discount_price,
-        CAST(REPLACE(JSON_EXTRACT(order_product, '$.subProductOrderAmount'), '"', '') AS FLOAT64) AS sub_product_order_amount,
-        CAST(REPLACE(JSON_EXTRACT(order_product, '$.subProductTotalPrice'), '"', '') AS FLOAT64) AS sub_product_total_price,
-        IF(REPLACE(JSON_EXTRACT(order_product, '$.subProductOrderNotes'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(order_product, '$.subProductOrderNotes'), '"', '')) AS sub_product_order_notes
+    ARRAY_AGG(
+      STRUCT(
+        A.sub_product_id,
+        IF(brand_id = '', NULL, brand_id) AS brand_id,
+        IF(company_id = '', NULL, company_id) AS company_id,
+        created_at,
+        created_by,
+        IF(external_id = '', NULL, external_id) AS external_id,
+        is_bonus,
+        is_deleted,
+        is_tax,
+        modified_at,
+        modified_by,
+        on_shelf,
+        A.product_id,
+        product_on_shelf,
+        sub_product_description,
+        sub_product_discount_percent,
+        sub_product_minimum_order,
+        sub_product_name,
+        sub_product_price,
+        sub_product_stock,
+        sub_product_unit,
+        sub_product_weight,
+        IF(sub_product_size = '', NULL, sub_product_size) AS sub_product_size,
+        sub_product_stock_on_hold,
+        IF(sub_product_order_stock_status = '', NULL, sub_product_order_stock_status) AS sub_product_order_stock_status,
+        IF(sub_product_minimum_order_stock_status = '', NULL, sub_product_minimum_order_stock_status) AS sub_product_minimum_order_stock_status,
+        IF(product_name = '', NULL, product_name) AS product_name,
+        sub_product_discount_amount,
+        sub_product_discount_price,
+        sub_product_total_discount_price,
+        sub_product_order_amount,
+        sub_product_total_price,
+        IF(sub_product_order_notes = '', NULL, sub_product_order_notes) AS sub_product_order_notes,
+        category_ids,
+        sub_product_image,
+        sub_product_variant,
+        B.booked_stock
       )
     ) AS order_product
   FROM
-    pre_order_product A
+    unnested_pre_order_product A
     LEFT JOIN pre_booked_stock B
-    ON A.data = B.data
+    ON A.id = B.id
+    AND A.product_id = B.product_id
+    AND A.sub_product_id = B.sub_product_id
     AND A.published_timestamp = B.published_timestamp
-
-    LEFT JOIN pre_subproduct_images C
-    ON A.data = C.data
-    AND A.published_timestamp = C.published_timestamp
-
-    LEFT JOIN pre_subproduct_variant D
-    ON A.data = D.data
-    AND A.published_timestamp = D.published_timestamp
-  GROUP BY 1,2
+  GROUP BY 1, 2
 )
 
 -- END ORDER_PRODUCT
@@ -577,5 +593,5 @@ FROM
   AND A.ts = D.published_timestamp
 
   LEFT JOIN order_product E
-  ON A.data = E.data
+  ON A.id = E.id
   AND A.ts = E.published_timestamp
