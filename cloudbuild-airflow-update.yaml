@@ -1,4 +1,4 @@
 steps:
   - id: copy_files_to_gcs
     name: 'gcr.io/cloud-builders/gsutil'
-    args: [ 'cp', '-r', 'dags', 'gs://cloudbuild-github-test/dags' ]
+    args: [ 'cp', '-r', 'dags', 'gs://$_BUCKET_ID/dags' ]
