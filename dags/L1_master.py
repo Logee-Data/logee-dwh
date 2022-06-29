@@ -71,7 +71,8 @@ for job in all_jobs:
             f"SELECT * FROM `{job.get('source')}`"
             + " WHERE _date_partition IN ('{{ ds }}', '{{ next_ds }}') "
             "AND ts BETWEEN '{{ execution_date }}' AND '{{ next_execution_date }}'"
-        )
+        ),
+        use_legacy_sql=False
     )
 
     sql_run_operator = BigQueryExecuteQueryOperator(
@@ -81,6 +82,7 @@ for job in all_jobs:
         destination_dataset_table=job.get('destination'),
         write_disposition='WRITE_APPEND',
         allow_large_results=True,
+        use_legacy_sql=False,
         schema_update_options=[
             "ALLOW_FIELD_ADDITION", "ALLOW_FIELD_RELAXATION"
         ],
