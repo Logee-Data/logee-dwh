@@ -1,12 +1,12 @@
 WITH base AS (
   SELECT * FROM `logee-data-prod.logee_datalake_raw_production.visibility_lgd_voucher` 
-  WHERE _date_partition >= '2022-01-01'
+  WHERE  _date_partition IN ('{{ ds }}', '{{ next_ds }}')
+  AND ts BETWEEN '{{ execution_date }}' AND '{{ next_execution_date }}'
 )
 
 -- Begin company_ids
 ,company_ids AS (
   SELECT
-    data,
     ts AS published_timestamp,
     ARRAY_AGG (
       REPLACE(company_ids, '"', '')
@@ -14,7 +14,7 @@ WITH base AS (
   FROM
     base,
     UNNEST(JSON_EXTRACT_ARRAY(data, '$.companyIds')) AS company_ids
-  GROUP BY 1,2
+  GROUP BY 1
 )
 
 -- End
@@ -22,7 +22,6 @@ WITH base AS (
 -- BEGIN company_group_ids
 ,company_group_ids AS (
   SELECT
-    data,
     ts AS published_timestamp,
     ARRAY_AGG (
       REPLACE(company_group_ids , '"', '')
@@ -30,7 +29,7 @@ WITH base AS (
   FROM
     base,
     UNNEST(JSON_EXTRACT_ARRAY(data, '$.companyGroupIds')) AS company_group_ids 
-  GROUP BY 1,2
+  GROUP BY 1
 )
 
 -- End
@@ -51,13 +50,10 @@ SELECT
   REPLACE(JSON_EXTRACT(A.data, '$.createdBy'), '"', '') AS created_by,
   CAST(REPLACE(JSON_EXTRACT(A.data, '$.modifiedAt'), '"', '') AS TIMESTAMP) AS modified_at,
   REPLACE(JSON_EXTRACT(A.data, '$.modifiedBy'), '"', '') AS modified_by,
-  A.data AS original_data,
   ts AS published_timestamp
 FROM base A
   LEFT JOIN company_ids B
-  ON A.data = B.data
-  AND A.ts = B.published_timestamp
+  ON A.ts = B.published_timestamp
   
   LEFT JOIN company_group_ids C
-  ON A.data = C.data
-  AND A.ts = C.published_timestamp
+  ON A.ts = C.published_timestamp
