@@ -81,20 +81,6 @@ WITH base AS (
     original_data,
     published_timestamp,
     STRUCT(
-      'is_deleted' AS column,
-      IF(is_deleted IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
-    ) AS quality_check
-  FROM
-    base
-  WHERE
-    is_deleted IS NULL
-
-  UNION ALL
-
-  SELECT
-    original_data,
-    published_timestamp,
-    STRUCT(
       'parent_id' AS column,
       IF(category_type	 IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
     ) AS quality_check
