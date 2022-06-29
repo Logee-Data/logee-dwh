@@ -93,7 +93,7 @@ for job in all_jobs:
         },
         labels={
             "type": "scheduled",
-            "level": "L1",
+            "level": "landing",
             "runner": "airflow"
         }
     )
