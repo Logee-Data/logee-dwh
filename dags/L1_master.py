@@ -1,6 +1,7 @@
 from os import listdir
 from datetime import datetime, timedelta
 from airflow import DAG
+from airflow.sensors.time_delta_sensor import TimeDeltaSensor
 from airflow.providers.google.cloud.operators.bigquery import (
     BigQueryCheckOperator,
     BigQueryExecuteQueryOperator
@@ -31,7 +32,7 @@ for i in dataset_folder:
 
         skeleton = j.replace('./config/', '').replace('.yaml', '').split('/')
 
-        config_dict['dag_id'] = '_'.join([config_dict.get('dataset_id'), config_dict.get('table_id')])
+        config_dict['dag_id'] = config_dict.get('dag_id')
         config_dict['sql'] = sql
 
         all_jobs.append(config_dict)
@@ -53,4 +54,43 @@ for job in all_jobs:
         default_args=default_args,
         catchup=False
     )
+
+    wait = TimeDeltaSensor(
+        task_id='wait_for_data',
+        dag=dag,
+        delta=timedelta(minutes=2)
+    )
+
+    check_operator = BigQueryCheckOperator(
+        task_id='check_raw_source',
+        dag=dag,
+        sql=(
+            f"SELECT * FROM `{job.get('source')}`"
+            + " WHERE _date_partition IN ('{{ ds }}', '{{ next_ds }}') "
+            "AND ts BETWEEN '{{ execution_date }}' AND '{{ next_execution_date }}'"
+        )
+    )
+
+    sql_run_operator = BigQueryExecuteQueryOperator(
+        task_id='move_raw_to_L1',
+        dag=dag,
+        sql=job.get('sql'),
+        destination_dataset_table=job.get('destination'),
+        write_disposition='WRITE_APPEND',
+        allow_large_results=True,
+        schema_update_options=[
+            "ALLOW_FIELD_ADDITION", "ALLOW_FIELD_RELAXATION"
+        ],
+        time_partitioning={
+            "type": "DAY",
+            "field": job.get('time_partitioning')
+        },
+        label={
+            "type": "scheduled",
+            "level": "L1",
+            "runner": "airflow"
+        }
+    )
+
+    wait >> check_operator >> sql_run_operator
 
