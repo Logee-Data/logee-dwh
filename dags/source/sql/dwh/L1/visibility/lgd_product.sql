@@ -1,7 +1,9 @@
 WITH base AS (
   SELECT *
   FROM `logee-data-prod.logee_datalake_raw_production.visibility_lgd_product`
-  WHERE _date_partition >= '2022-01-01'
+  WHERE 
+    _date_partition IN ('{{ ds }}', '{{ next_ds }}')
+    AND ts BETWEEN '{{ execution_date }}' AND '{{ next_execution_date }}'
 )
 
 -- BEGIN CLEANING DATA
@@ -97,7 +99,6 @@ REPLACE(JSON_EXTRACT(B.original_data, '$.createdBy'),'"','') AS created_by,
 CAST(REPLACE(JSON_EXTRACT(B.original_data, '$.createdAt'),'"','') AS TIMESTAMP) AS created_at,
 REPLACE(JSON_EXTRACT(B.original_data, '$.modifiedBy'),'"','') AS modified_by,
 CAST(REPLACE(JSON_EXTRACT(B.original_data, '$.modifiedAt'),'"','') AS TIMESTAMP) AS modified_at,
-B.original_data,
 B.published_timestamp
 FROM product_variant A
   FULL OUTER JOIN pre_data B
