@@ -1,8 +1,12 @@
 WITH
 
 base AS (
-  SELECT * FROM `logee-data-prod.logee_datalake_raw_production.visibility_dma_logee_companies` 
-  WHERE _date_partition >= "2022-01-01" 
+  SELECT * 
+  FROM 
+    `logee-data-prod.logee_datalake_raw_production.visibility_dma_logee_companies` 
+  WHERE
+    _date_partition IN ('{{ ds }}', '{{ next_ds }}')
+    AND ts BETWEEN '{{ execution_date }}' AND '{{ next_execution_date }}'
 )
 
 -- BEGIN allowedPaymentType
@@ -157,7 +161,6 @@ SELECT
   REPLACE(JSON_EXTRACT(A.data, '$.tracking'), '"', '') AS tracking,
   E.visibility,
   F.control,
-  A.data AS original_data,
   ts AS published_timestamp
 FROM base A
   LEFT JOIN partner_ids B
