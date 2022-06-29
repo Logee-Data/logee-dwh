@@ -2,10 +2,8 @@ from os import listdir
 from datetime import datetime, timedelta
 from airflow import DAG
 from airflow.sensors.time_delta_sensor import TimeDeltaSensor
-from airflow.providers.google.cloud.operators.bigquery import (
-    BigQueryCheckOperator,
-    BigQueryExecuteQueryOperator
-)
+from airflow.providers.google.cloud.operators.bigquery import BigQueryExecuteQueryOperator
+from airflow.sensors.external_task import ExternalTaskSensor
 
 import pathlib
 import yaml
@@ -14,7 +12,7 @@ all_jobs = list()
 
 dags = str(pathlib.Path(__file__).parent.absolute())
 dataset_folder = [
-    '/'.join([f'{dags}/config/L1', f]) for f in listdir(f'{dags}/config/L1') if '.' not in f
+    '/'.join([f'{dags}/config/L2', f]) for f in listdir(f'{dags}/config/L2') if '.' not in f
 ]
 
 for i in dataset_folder:
@@ -61,11 +59,29 @@ for job in all_jobs:
     wait = TimeDeltaSensor(
         task_id='wait_for_data',
         dag=dag,
-        delta=timedelta(minutes=2)
+        delta=timedelta(minutes=5)
     )
 
-    sql_run_operator = BigQueryExecuteQueryOperator(
-        task_id='move_raw_to_L1',
+    dependency_list = list()
+
+    for i in job.get('depends_on'):
+        external_dag_id = i.get('dag_id')
+        external_task_name_list = i.get('task_id')
+
+        for external_task in external_task_name_list:
+            task_id = f'{external_dag_id}_{external_task}'
+            external_task = ExternalTaskSensor(
+                task_id=f'wait_{task_id}',
+                dag=dag,
+                external_dag_id=external_dag_id,
+                external_task_id=external_task
+            )
+
+            wait >> external_task
+            dependency_list.append(external_task)
+
+    l2_sql_run_operator = BigQueryExecuteQueryOperator(
+        task_id='move_L1_to_L2',
         dag=dag,
         sql=job.get('sql'),
         destination_dataset_table=job.get('destination'),
@@ -87,5 +103,5 @@ for job in all_jobs:
         }
     )
 
-    wait >> sql_run_operator
-
+    for i in dependency_list:
+        i >> l2_sql_run_operator
