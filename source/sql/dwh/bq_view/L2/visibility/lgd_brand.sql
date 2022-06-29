@@ -32,20 +32,6 @@ WITH base AS (
     base
   WHERE
     brand_name IS NULL or brand_name = ''
-  
-  UNION ALL
-
-  SELECT
-    original_data,
-    published_timestamp,
-    STRUCT(
-      'is_deleted' AS column,
-      IF(is_deleted IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
-    ) AS quality_check
-  FROM
-    base
-  WHERE
-    is_deleted IS NULL
 )
 -- END CHECK
 
