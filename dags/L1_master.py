@@ -64,17 +64,6 @@ for job in all_jobs:
         delta=timedelta(minutes=2)
     )
 
-    # check_operator = BigQueryCheckOperator(
-    #     task_id='check_raw_source',
-    #     dag=dag,
-    #     sql=(
-    #         f"SELECT * FROM `{job.get('source')}`"
-    #         + " WHERE _date_partition IN ('{{ ds }}', '{{ next_ds }}') "
-    #         "AND ts BETWEEN '{{ execution_date }}' AND '{{ next_execution_date }}'"
-    #     ),
-    #     use_legacy_sql=False
-    # )
-
     sql_run_operator = BigQueryExecuteQueryOperator(
         task_id='move_raw_to_L1',
         dag=dag,
