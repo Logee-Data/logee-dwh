@@ -64,16 +64,16 @@ for job in all_jobs:
         delta=timedelta(minutes=2)
     )
 
-    check_operator = BigQueryCheckOperator(
-        task_id='check_raw_source',
-        dag=dag,
-        sql=(
-            f"SELECT * FROM `{job.get('source')}`"
-            + " WHERE _date_partition IN ('{{ ds }}', '{{ next_ds }}') "
-            "AND ts BETWEEN '{{ execution_date }}' AND '{{ next_execution_date }}'"
-        ),
-        use_legacy_sql=False
-    )
+    # check_operator = BigQueryCheckOperator(
+    #     task_id='check_raw_source',
+    #     dag=dag,
+    #     sql=(
+    #         f"SELECT * FROM `{job.get('source')}`"
+    #         + " WHERE _date_partition IN ('{{ ds }}', '{{ next_ds }}') "
+    #         "AND ts BETWEEN '{{ execution_date }}' AND '{{ next_execution_date }}'"
+    #     ),
+    #     use_legacy_sql=False
+    # )
 
     sql_run_operator = BigQueryExecuteQueryOperator(
         task_id='move_raw_to_L1',
@@ -83,6 +83,7 @@ for job in all_jobs:
         write_disposition='WRITE_APPEND',
         allow_large_results=True,
         use_legacy_sql=False,
+        location='asia-southeast2',
         schema_update_options=[
             "ALLOW_FIELD_ADDITION", "ALLOW_FIELD_RELAXATION"
         ],
@@ -97,5 +98,5 @@ for job in all_jobs:
         }
     )
 
-    wait >> check_operator >> sql_run_operator
+    wait >> sql_run_operator
 
