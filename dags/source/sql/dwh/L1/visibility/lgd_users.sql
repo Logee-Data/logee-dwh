@@ -1,8 +1,12 @@
 WITH 
 
 base AS (
-  SELECT * FROM `logee-data-prod.logee_datalake_raw_production.visibility_lgd_users` 
-  WHERE _date_partition >= "2022-01-01"
+  SELECT * 
+  FROM 
+    `logee-data-prod.logee_datalake_raw_production.visibility_lgd_users` 
+  WHERE
+    _date_partition IN ('{{ ds }}', '{{ next_ds }}')
+    AND ts BETWEEN '{{ execution_date }}' AND '{{ next_execution_date }}'
 )
 
 -- BEGIN APPS
@@ -266,7 +270,7 @@ SELECT
   IF(REPLACE(JSON_EXTRACT(A.data, '$.email'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(A.data, '$.email'), '"', '')) AS email,
   IF(REPLACE(JSON_EXTRACT(A.data, '$.phoneNumber'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(A.data, '$.phoneNumber'), '"', '')) AS phone_number,
   IF(REPLACE(JSON_EXTRACT(A.data, '$.roleId'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(A.data, '$.roleId'), '"', '')) AS role_id,
-  IF(REPLACE(JSON_EXTRACT(A.data, '$.loginCount'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(A.data, '$.loginCount'), '"', '')) AS login_count,
+  IF(REPLACE(JSON_EXTRACT_SCALAR(A.data, '$.loginCount'), '"', '') = "", NULL, CAST(REPLACE(JSON_EXTRACT_SCALAR(A.data, '$.loginCount'), '"', '') AS INT64)) AS login_count,
   B.apps AS apps,
   C.roles AS roles,
   IF(REPLACE(JSON_EXTRACT(A.data, '$.workArea'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(A.data, '$.workArea'), '"', '')) AS work_area,
@@ -277,7 +281,6 @@ SELECT
   IF(REPLACE(JSON_EXTRACT(A.data, '$.createdBy'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(A.data, '$.createdBy'), '"', '')) AS created_by,
   CAST(REPLACE(JSON_EXTRACT(A.data, '$.modifiedAt'), '"', '') AS TIMESTAMP) AS modified_at,
   IF(REPLACE(JSON_EXTRACT(A.data, '$.modifiedBy'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(A.data, '$.modifiedBy'), '"', '')) AS modified_by,
-  A.data AS original_data,
   A.ts AS published_timestamp
   
   FROM base A
