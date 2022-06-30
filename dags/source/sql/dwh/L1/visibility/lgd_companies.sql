@@ -139,7 +139,6 @@ JSON_EXTRACT_SCALAR(A.data, '$.companyId') AS company_id,
   CAST(REPLACE(JSON_EXTRACT(A.data, '$.modifiedAt'), '"', '') AS TIMESTAMP) AS modified_at,
   REPLACE(JSON_EXTRACT(A.data, '$.modifiedBy'), '"', '') AS modified_by,
   IF(REPLACE(JSON_EXTRACT(A.data, '$.companyGroupId'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(A.data, '$.companyGroupId'), '"', '')) AS companyGroup_id,
-  A.data AS original_data,
   A.ts AS published_timestamp
   FROM base A
   LEFT JOIN partnershipCompanyId B
