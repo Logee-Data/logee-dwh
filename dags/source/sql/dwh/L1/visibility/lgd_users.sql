@@ -142,8 +142,8 @@ base AS (
       IF(REPLACE(JSON_EXTRACT_SCALAR(data, '$.usermetadata.mainAddress.zipCode'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT_SCALAR(data, '$.usermetadata.mainAddress.zipCode'), '"', ''))  AS zip_code,
       IF(REPLACE(JSON_EXTRACT_SCALAR(data, '$.usermetadata.mainAddress.zipCodeId'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT_SCALAR(data, '$.usermetadata.mainAddress.zipCodeId'), '"', ''))  AS zip_code_id,
       IF(REPLACE(JSON_EXTRACT_SCALAR(data, '$.usermetadata.mainAddress.address'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT_SCALAR(data, '$.usermetadata.mainAddress.address'), '"', ''))  AS address,
-      IF(REPLACE(JSON_EXTRACT_SCALAR(data, '$.usermetadata.mainAddress.lat'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT_SCALAR(data, '$.usermetadata.mainAddress.lat'), '"', ''))  AS lat,
-      IF(REPLACE(JSON_EXTRACT_SCALAR(data, '$.usermetadata.mainAddress.long'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT_SCALAR(data, '$.usermetadata.mainAddress.long'), '"', ''))  AS long,
+      IF(REPLACE(JSON_EXTRACT_SCALAR(data, '$.usermetadata.mainAddress.lat'), '"', '') = "", NULL, CAST(REPLACE(JSON_EXTRACT_SCALAR(data, '$.usermetadata.mainAddress.lat'), '"', '') AS FLOAT64))  AS lat,
+      IF(REPLACE(JSON_EXTRACT_SCALAR(data, '$.usermetadata.mainAddress.long'), '"', '') = "", NULL, CAST(REPLACE(JSON_EXTRACT_SCALAR(data, '$.usermetadata.mainAddress.long'), '"', '') AS FLOAT64))  AS long,
       CAST(JSON_EXTRACT_SCALAR(data, '$.usermetadata.mainAddress.isFulfillmentProcess') AS BOOL) AS is_fulfillment_process,
       IF(REPLACE(JSON_EXTRACT_SCALAR(data, '$.usermetadata.mainAddress.addressId'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT_SCALAR(data, '$.usermetadata.mainAddress.addressId'), '"', ''))  AS address_id,
       IF(JSON_EXTRACT_SCALAR(data, '$.usermetadata.mainAddress.addressMark') = "", NULL, JSON_EXTRACT(data, '$.usermetadata.mainAddress.addressMark')) AS address_mark
