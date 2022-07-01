@@ -9,11 +9,11 @@ WITH BASE AS (
 )
 
 SELECT
-    IF(REPLACE(JSON_EXTRACT(data, '$.driverId'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(data, '$.driverId'), '"', ''))  AS driver_id,
-    IF(REPLACE(JSON_EXTRACT(data, '$.name'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(data, '$.name'), '"', ''))  AS name,
-    IF(REPLACE(JSON_EXTRACT(data, '$.phone'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(data, '$.phone'), '"', ''))  AS phone,
-    IF(REPLACE(JSON_EXTRACT(data, '$.email'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(data, '$.email'), '"', ''))  AS email,
-    REPLACE(JSON_EXTRACT(data, '$.placeOfBirth'), '"', '') AS place_of_birth,
+    IF(JSON_EXTRACT_SCALAR(data, '$.driverId') = "", NULL, REPLACE(JSON_EXTRACT(data, '$.driverId'), '"', ''))  AS driver_id,
+    IF(JSON_EXTRACT_SCALAR(data, '$.name') = "", NULL, REPLACE(JSON_EXTRACT(data, '$.name'), '"', ''))  AS name,
+    IF(JSON_EXTRACT_SCALAR(data, '$.phone') = "", NULL, REPLACE(JSON_EXTRACT(data, '$.phone'), '"', ''))  AS phone,
+    IF(JSON_EXTRACT_SCALAR(data, '$.email') = "", NULL, REPLACE(JSON_EXTRACT(data, '$.email'), '"', ''))  AS email,
+    JSON_EXTRACT_SCALAR(data, '$.placeOfBirth') AS place_of_birth,
     DATE(IF(REPLACE(JSON_EXTRACT(data, '$.dateOfBirth'), '"', '') = '', NULL, REPLACE(JSON_EXTRACT(data, '$.dateOfBirth'), '"', ''))) AS date_of_birth,
     REPLACE(JSON_EXTRACT(data, '$.ktpNum'), '"', '') AS ktp_num,
     REPLACE(JSON_EXTRACT(data, '$.simType'), '"', '') AS sim_type,
