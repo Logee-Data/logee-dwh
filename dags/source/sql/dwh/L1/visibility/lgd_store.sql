@@ -1,6 +1,7 @@
 WITH
   base AS (
-  SELECT * except(data), data AS original_data
+  SELECT
+    *
   FROM
     `logee-data-prod.logee_datalake_raw_production.visibility_lgd_store`
   WHERE
@@ -142,8 +143,6 @@ B.list_Address,
   REPLACE(JSON_EXTRACT(A.data, '$.modifiedBy'), '"', '') AS modified_by,
    CAST(REPLACE(JSON_EXTRACT_SCALAR(A.data, '$.isDeleted'), '"', '') AS BOOL) AS is_deleted,
     CAST(REPLACE(JSON_EXTRACT_SCALAR(A.data, '$.isActive'), '"', '') AS BOOL) AS is_active,
-  
-  A.data AS original_data,
   A.ts AS published_timestamp
 from base A
 LEFT JOIN listAddress B
