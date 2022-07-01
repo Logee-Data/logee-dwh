@@ -1,0 +1,6 @@
+dag_id: L1_visibility_dma_logee_drivers
+source: logee-data-prod.logee_datalake_raw_production.visibility_dma_logee_drivers
+destination: logee-data-prod.L1_visibility.dma_logee_drivers
+sql: source/sql/dwh/L1/visibility/lgd_dma_logee_drivers.sql
+schedule: 0 */3 * * *
+time_partitioning: modified_at
