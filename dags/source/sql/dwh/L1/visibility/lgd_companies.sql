@@ -1,7 +1,6 @@
 WITH 
 base AS (
-  SELECT * except(data), data AS original_data
-  FROM `logee-data-prod.logee_datalake_raw_production.visibility_lgd_companies`
+  SELECT * FROM `logee-data-prod.logee_datalake_raw_production.visibility_lgd_companies`
   WHERE  _date_partition IN ('{{ ds }}', '{{ next_ds }}')
     AND ts BETWEEN '{{ execution_date }}' AND '{{ next_execution_date }}'
   )
