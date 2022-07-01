@@ -1,8 +1,12 @@
 WITH 
 
 base AS (
-  SELECT * FROM `logee-data-prod.logee_datalake_raw_production.visibility_dma_logee_user` 
-  WHERE _date_partition >= "2022-01-01"
+  SELECT * 
+  FROM 
+    `logee-data-prod.logee_datalake_raw_production.visibility_dma_logee_user` 
+  WHERE 
+    _date_partition IN ('{{ ds }}', '{{ next_ds }}')
+    AND ts BETWEEN '{{ execution_date }}' AND '{{ next_execution_date }}'
 )
 
 -- Begin apps
@@ -71,7 +75,6 @@ SELECT
   CAST(REPLACE(JSON_EXTRACT(A.data, '$.modifiedAt'), '"', '') AS TIMESTAMP) AS modified_at,
   REPLACE(JSON_EXTRACT(A.data, '$.modifiedBy'), '"', '') AS modified_by,
   REPLACE(JSON_EXTRACT(A.data, '$.userId'), '"', '') AS user_id,
-  A.data AS original_data,
   ts AS published_timestamp
 
 FROM base A
