@@ -1,7 +1,9 @@
 WITH BASE AS (
   SELECT *
   FROM `logee-data-prod.logee_datalake_raw_production.visibility_lgd_attendance`
-  WHERE _date_partition >= "2022-01-01" 
+  WHERE
+    _date_partition IN ('{{ ds }}', '{{ next_ds }}')
+  AND ts BETWEEN '{{ execution_date }}' AND '{{ next_execution_date }}' 
 )
 
 ,pre_track_activities AS (
@@ -57,7 +59,6 @@ SELECT
   CAST(JSON_EXTRACT_SCALAR(data, '$.createdAt') AS TIMESTAMP) AS created_at,
   REPLACE(JSON_EXTRACT(data, '$.modifiedBy'),'"','') AS modified_by,
   CAST(JSON_EXTRACT_SCALAR(data, '$.modifiedAt') AS TIMESTAMP) AS modified_at,
-  data AS original_data,
   ts AS published_timestamp
 FROM
   BASE A
