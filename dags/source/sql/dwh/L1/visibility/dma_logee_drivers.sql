@@ -3,7 +3,9 @@ WITH BASE AS (
     *
   FROM
     `logee-data-prod.logee_datalake_raw_production.visibility_dma_logee_drivers`
-  WHERE _date_partition >= "2022-01-01"
+  WHERE
+   _date_partition IN ('{{ ds }}', '{{ next_ds }}')
+    AND ts BETWEEN '{{ execution_date }}' AND '{{ next_execution_date }}'
 )
 
 SELECT
@@ -23,7 +25,6 @@ SELECT
      DATE(IF(REPLACE(JSON_EXTRACT(data, '$.simExpiryDate'), '"', '') = '', NULL, REPLACE(JSON_EXTRACT(data, '$.simExpiryDate'), '"', ''))),
      NULL 
   ) AS sim_expired,
-  data AS original_data,
   ts AS published_timestamp
 FROM
   BASE
