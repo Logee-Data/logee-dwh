@@ -49,7 +49,7 @@ WITH base AS (
         CAST(IF(JSON_EXTRACT_SCALAR(destination_list, '$.destinationLatitude') = "", NULL, JSON_EXTRACT_SCALAR(destination_list, '$.destinationLatitude')) AS FLOAT64) AS destination_latitude,
         CAST(IF(JSON_EXTRACT_SCALAR(destination_list, '$.destinationLongitude') = "", NULL, JSON_EXTRACT_SCALAR(destination_list, '$.destinationLongitude')) AS FLOAT64) AS destination_longitude,
         IF(JSON_EXTRACT_SCALAR(destination_list, '$.destinationLocation') = "", NULL, JSON_EXTRACT_SCALAR(destination_list, '$.destinationLocation')) AS destination_location,
-        IF(JSON_EXTRACT_SCALAR(destination_list, '$.destinationPicPhone') = "", NULL, JSON_EXTRACT_SCALAR(destination_list, '$.destinationPicPhone')) AS destination_pic_phone,
+        IF(JSON_EXTRACT_SCALAR(destination_list, '$.destinationPicPhone') = "", NULL, JSON_EXTRACT_SCALAR(destination_list, '$.destinationPicPhone')) AS destination_pic_phone
       )
     ) AS destination_list
   FROM
@@ -150,3 +150,4 @@ FROM
   LEFT JOIN delivery_detail_status C
   ON A.data = C.data
   AND A.ts = C.published_timestamp
+
