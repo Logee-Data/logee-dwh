@@ -1,0 +1,6 @@
+dag_id: L1_visibility_lgd_sub_product
+source: logee-data-prod.logee_datalake_raw_production.visibility_lgd_sub_product
+destination: logee-data-prod.L1_visibility.lgd_sub_product
+sql: source/sql/dwh/L1/visibility/lgd_sub_product.sql
+schedule: 0 */3 * * *
+time_partitioning: modified_at
