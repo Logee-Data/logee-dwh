@@ -80,7 +80,8 @@ WITH base AS(
     TO_HEX(SHA256(email)) AS email,
     TO_HEX(SHA256(phone_number)) AS phone_number
   )
-  FROM `logee-data-dev.L1_visibility_playground.lgd_users`
+  FROM `logee-data-prod.L1_visibility.lgd_users`
+  WHERE modified_at BETWEEN '{{ execution_date }}' AND '{{ next_execution_date }}'
 )
 
 ,check AS (
@@ -88,7 +89,7 @@ WITH base AS(
   -- MAIN
   
   SELECT
-    original_data,
+    user_id,
     published_timestamp,
 
     STRUCT(
@@ -101,7 +102,7 @@ WITH base AS(
   UNION ALL
 
   SELECT
-    original_data,
+    user_id,
     published_timestamp,
 
     STRUCT(
@@ -114,7 +115,7 @@ WITH base AS(
   UNION ALL
 
   SELECT
-    original_data,
+    user_id,
     published_timestamp,
 
     STRUCT(
@@ -127,7 +128,7 @@ WITH base AS(
   UNION ALL
 
   SELECT
-    original_data,
+    user_id,
     published_timestamp,
 
     STRUCT(
@@ -140,7 +141,7 @@ WITH base AS(
   UNION ALL
 
   SELECT
-    original_data,
+    user_id,
     published_timestamp,
 
     STRUCT(
@@ -153,7 +154,7 @@ WITH base AS(
   UNION ALL
 
   SELECT
-    original_data,
+    user_id,
     published_timestamp,
 
     STRUCT(
@@ -166,7 +167,7 @@ WITH base AS(
   UNION ALL
 
   SELECT
-    original_data,
+    user_id,
     published_timestamp,
 
     STRUCT(
@@ -179,7 +180,7 @@ WITH base AS(
   UNION ALL
 
   SELECT
-    original_data,
+    user_id,
     published_timestamp,
 
     STRUCT(
@@ -192,7 +193,7 @@ WITH base AS(
   UNION ALL
 
   SELECT
-    original_data,
+    user_id,
     published_timestamp,
 
     STRUCT(
@@ -207,7 +208,7 @@ WITH base AS(
   UNION ALL
 
   SELECT
-    original_data,
+    user_id,
     published_timestamp,
 
     STRUCT(
@@ -220,7 +221,7 @@ WITH base AS(
   UNION ALL
 
   SELECT
-    original_data,
+    user_id,
     published_timestamp,
 
     STRUCT(
@@ -233,7 +234,7 @@ WITH base AS(
   UNION ALL
 
   SELECT
-    original_data,
+    user_id,
     published_timestamp,
 
     STRUCT(
@@ -246,7 +247,7 @@ WITH base AS(
   UNION ALL
 
   SELECT
-    original_data,
+    user_id,
     published_timestamp,
 
     STRUCT(
@@ -259,7 +260,7 @@ WITH base AS(
   UNION ALL
 
   SELECT
-    original_data,
+    user_id,
     published_timestamp,
 
     STRUCT(
@@ -272,7 +273,7 @@ WITH base AS(
   UNION ALL
 
   SELECT
-    original_data,
+    user_id,
     published_timestamp,
 
     STRUCT(
@@ -285,7 +286,7 @@ WITH base AS(
   UNION ALL
 
   SELECT
-    original_data,
+    user_id,
     published_timestamp,
 
     STRUCT(
@@ -298,7 +299,7 @@ WITH base AS(
   UNION ALL
 
   SELECT
-    original_data,
+    user_id,
     published_timestamp,
 
     STRUCT(
@@ -311,7 +312,7 @@ WITH base AS(
   UNION ALL
 
   SELECT
-    original_data,
+    user_id,
     published_timestamp,
 
     STRUCT(
@@ -324,7 +325,7 @@ WITH base AS(
   UNION ALL
 
   SELECT
-    original_data,
+    user_id,
     published_timestamp,
 
     STRUCT(
@@ -337,7 +338,7 @@ WITH base AS(
   UNION ALL
 
   SELECT
-    original_data,
+    user_id,
     published_timestamp,
 
     STRUCT(
@@ -350,7 +351,7 @@ WITH base AS(
   UNION ALL
 
   SELECT
-    original_data,
+    user_id,
     published_timestamp,
 
     STRUCT(
@@ -365,7 +366,7 @@ WITH base AS(
   UNION ALL
 
   SELECT
-    original_data,
+    user_id,
     published_timestamp,
 
     STRUCT(
@@ -378,7 +379,7 @@ WITH base AS(
   UNION ALL
 
   SELECT
-    original_data,
+    user_id,
     published_timestamp,
 
     STRUCT(
@@ -393,7 +394,7 @@ WITH base AS(
   UNION ALL
 
   SELECT
-    original_data,
+    user_id,
     published_timestamp,
 
     STRUCT(
@@ -406,7 +407,7 @@ WITH base AS(
   UNION ALL
 
   SELECT
-    original_data,
+    user_id,
     published_timestamp,
 
     STRUCT(
@@ -419,7 +420,7 @@ WITH base AS(
   UNION ALL
 
   SELECT
-    original_data,
+    user_id,
     published_timestamp,
 
     STRUCT(
@@ -432,7 +433,7 @@ WITH base AS(
   UNION ALL
 
   SELECT
-    original_data,
+    user_id,
     published_timestamp,
 
     STRUCT(
@@ -445,7 +446,7 @@ WITH base AS(
   UNION ALL
 
   SELECT
-    original_data,
+    user_id,
     published_timestamp,
 
     STRUCT(
@@ -458,7 +459,7 @@ WITH base AS(
   UNION ALL
 
   SELECT
-    original_data,
+    user_id,
     published_timestamp,
 
     STRUCT(
@@ -471,7 +472,7 @@ WITH base AS(
   UNION ALL
 
   SELECT
-    original_data,
+    user_id,
     published_timestamp,
 
     STRUCT(
@@ -484,7 +485,7 @@ WITH base AS(
   UNION ALL
 
   SELECT
-    original_data,
+    user_id,
     published_timestamp,
 
     STRUCT(
@@ -497,7 +498,7 @@ WITH base AS(
   UNION ALL
 
   SELECT
-    original_data,
+    user_id,
     published_timestamp,
 
     STRUCT(
@@ -510,7 +511,7 @@ WITH base AS(
   UNION ALL
 
   SELECT
-    original_data,
+    user_id,
     published_timestamp,
 
     STRUCT(
@@ -523,7 +524,7 @@ WITH base AS(
   UNION ALL
 
   SELECT
-    original_data,
+    user_id,
     published_timestamp,
 
     STRUCT(
@@ -536,7 +537,7 @@ WITH base AS(
   UNION ALL
 
   SELECT
-    original_data,
+    user_id,
     published_timestamp,
 
     STRUCT(
@@ -551,7 +552,7 @@ WITH base AS(
   UNION ALL
 
   SELECT
-    original_data,
+    user_id,
     published_timestamp,
 
     STRUCT(
@@ -567,7 +568,7 @@ WITH base AS(
   UNION ALL
 
   SELECT
-    original_data,
+    user_id,
     published_timestamp,
 
     STRUCT(
@@ -580,7 +581,7 @@ WITH base AS(
   UNION ALL
 
   SELECT
-    original_data,
+    user_id,
     published_timestamp,
 
     STRUCT(
@@ -593,7 +594,7 @@ WITH base AS(
   UNION ALL
 
   SELECT
-    original_data,
+    user_id,
     published_timestamp,
 
     STRUCT(
@@ -606,7 +607,7 @@ WITH base AS(
   UNION ALL
 
   SELECT
-    original_data,
+    user_id,
     published_timestamp,
 
     STRUCT(
@@ -619,7 +620,7 @@ WITH base AS(
   UNION ALL
 
   SELECT
-    original_data,
+    user_id,
     published_timestamp,
 
     STRUCT(
@@ -632,7 +633,7 @@ WITH base AS(
   UNION ALL
 
   SELECT
-    original_data,
+    user_id,
     published_timestamp,
 
     STRUCT(
@@ -645,7 +646,7 @@ WITH base AS(
   UNION ALL
 
   SELECT
-    original_data,
+    user_id,
     published_timestamp,
 
     STRUCT(
@@ -658,7 +659,7 @@ WITH base AS(
   UNION ALL
 
   SELECT
-    original_data,
+    user_id,
     published_timestamp,
 
     STRUCT(
@@ -671,7 +672,7 @@ WITH base AS(
   UNION ALL
 
   SELECT
-    original_data,
+    user_id,
     published_timestamp,
 
     STRUCT(
@@ -684,7 +685,7 @@ WITH base AS(
   UNION ALL
 
   SELECT
-    original_data,
+    user_id,
     published_timestamp,
 
     STRUCT(
@@ -697,7 +698,7 @@ WITH base AS(
   UNION ALL
 
   SELECT
-    original_data,
+    user_id,
     published_timestamp,
 
     STRUCT(
@@ -710,7 +711,7 @@ WITH base AS(
   UNION ALL
 
   SELECT
-    original_data,
+    user_id,
     published_timestamp,
 
     STRUCT(
@@ -723,7 +724,7 @@ WITH base AS(
   UNION ALL
 
   SELECT
-    original_data,
+    user_id,
     published_timestamp,
 
     STRUCT(
@@ -736,7 +737,7 @@ WITH base AS(
   UNION ALL
 
   SELECT
-    original_data,
+    user_id,
     published_timestamp,
 
     STRUCT(
@@ -749,7 +750,7 @@ WITH base AS(
   UNION ALL
 
   SELECT
-    original_data,
+    user_id,
     published_timestamp,
 
     STRUCT(
@@ -764,7 +765,7 @@ WITH base AS(
   UNION ALL
 
   SELECT
-    original_data,
+    user_id,
     published_timestamp,
 
     STRUCT(
@@ -779,7 +780,7 @@ WITH base AS(
   UNION ALL
 
   SELECT
-    original_data,
+    user_id,
     published_timestamp,
 
     STRUCT(
@@ -792,7 +793,7 @@ WITH base AS(
   UNION ALL
 
   SELECT
-    original_data,
+    user_id,
     published_timestamp,
 
     STRUCT(
@@ -805,7 +806,7 @@ WITH base AS(
   UNION ALL
 
   SELECT
-    original_data,
+    user_id,
     published_timestamp,
 
     STRUCT(
@@ -818,7 +819,7 @@ WITH base AS(
 
 ,aggregated_check AS (
   SELECT
-    original_data,
+    user_id,
     published_timestamp,
     ARRAY_AGG(
       quality_check
@@ -833,5 +834,5 @@ SELECT
 FROM
   base A
   LEFT JOIN aggregated_check B
-  ON A.original_data = B.original_data
+  ON A.user_id = B.user_id
   AND A.published_timestamp = B.published_timestamp
