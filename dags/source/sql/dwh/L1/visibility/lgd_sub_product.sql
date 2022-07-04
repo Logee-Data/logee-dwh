@@ -2,7 +2,9 @@ WITH
 
 base AS (
   SELECT * FROM `logee-data-prod.logee_datalake_raw_production.visibility_lgd_sub_product`
-  WHERE _date_partition >= '2022-01-01'
+  WHERE
+    _date_partition IN ('{{ ds }}', '{{ next_ds }}')
+    AND ts BETWEEN '{{ execution_date }}' AND '{{ next_execution_date }}'
 )
 
 -- BEGIN SUB PRODUCT VARIANT
@@ -16,7 +18,8 @@ base AS (
     BASE,
     UNNEST(JSON_EXTRACT_ARRAY(REPLACE(REPLACE(REPLACE(JSON_EXTRACT(data, '$.subProductVariant'), '\\', ''), '\"[', '['), ']\"', ']'), '$.')) AS sub_product_variant
   WHERE
-    _date_partition >= '2022-01-01'
+    _date_partition IN ('{{ ds }}', '{{ next_ds }}')
+    AND ts BETWEEN '{{ execution_date }}' AND '{{ next_execution_date }}'
 )
 
 ,sub_product_variant AS (
@@ -47,7 +50,8 @@ base AS (
     BASE,
     UNNEST(JSON_EXTRACT_ARRAY(REPLACE(REPLACE(REPLACE(JSON_EXTRACT(data, '$.bookedStock'), '\\', ''), '\"[', '['), ']\"', ']'), '$.')) AS booked_stock
   WHERE
-    _date_partition >= '2022-01-01'
+    _date_partition IN ('{{ ds }}', '{{ next_ds }}')
+    AND ts BETWEEN '{{ execution_date }}' AND '{{ next_execution_date }}'
 )
 
 ,booked_stock AS (
@@ -75,7 +79,7 @@ SELECT
   REPLACE(JSON_EXTRACT(A.data, '$.productId'), '"', '') AS product_id,
   REPLACE(JSON_EXTRACT(A.data, '$.subProductName'), '"', '') AS sub_product_name,
   REPLACE(JSON_EXTRACT(A.data, '$.subProductSize'), '"', '') AS sub_product_size,
-  JSON_EXTRACT_ARRAY(A.data, '$.subProductColors' AS sub_product_colors,
+  JSON_EXTRACT_ARRAY(A.data, '$.subProductColors') AS sub_product_colors,
   CAST(REPLACE(JSON_EXTRACT(A.data, '$.subProductStock'), '"', '') AS INT64) AS sub_product_stock,
   CAST(REPLACE(JSON_EXTRACT(A.data, '$.subProductDiscountPercent'), '"', '') AS FLOAT64) AS sub_product_discount_percent,
   REPLACE(JSON_EXTRACT(A.data, '$.subProductDescription'), '"', '') AS sub_product_description,
@@ -103,7 +107,6 @@ SELECT
   REPLACE(JSON_EXTRACT(A.data, '$.modifiedBy'), '"', '') AS modified_by,
   CAST(REPLACE(JSON_EXTRACT(A.data, '$.modifiedAt'), '"', '') AS TIMESTAMP) AS modified_at,
   CAST(REPLACE(JSON_EXTRACT(A.data, '$.insert_date_dma'), '"', '') AS TIMESTAMP) AS insert_date_dma,
-  A.data AS original_data,
   A.ts AS published_timestamp
 FROM
   base A
