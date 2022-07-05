@@ -635,31 +635,6 @@ UNION ALL
     ) AS quality_check
   FROM base
   WHERE assigned_task_id is NULL or assigned_task_id = ''
-
-
-UNION ALL
-
-  SELECT
-    store_id,
-    published_timestamp,
-    STRUCT(
-      'is_deleted' AS column,
-      IF(is_deleted IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
-    ) AS quality_check
-  FROM base
-  WHERE is_deleted IS NULL 
-
-  UNION ALL
-
-  SELECT
-    store_id,
-    published_timestamp,
-    STRUCT(
-      'is_active' AS column,
-      IF(is_active IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
-    ) AS quality_check
-  FROM base
-  WHERE is_active IS NULL 
 )
 
 ,aggregated_check AS (
