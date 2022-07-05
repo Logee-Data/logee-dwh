@@ -185,10 +185,10 @@ WITH base AS(
 
     STRUCT(
       'login_count' AS column,
-      IF(login_count IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
+      IF(login_count IS NULL, 'Column can not be NULL', IF(login_count < 0, 'Column can not be a negative number', "Column can not be a negative number")) AS quality_notes
     ) AS quality_check
   FROM base
-  WHERE login_count IS NULL
+  WHERE login_count IS NULL or login_count < 0
 
   UNION ALL
 
@@ -542,12 +542,10 @@ WITH base AS(
 
     STRUCT(
       'lat' AS column,
-      IF(user_metadata.store_owner.owner_address.lat IS NULL, 'Column can not be NULL', 
-        IF(user_metadata.store_owner.owner_address.lat = 0, 'Column can not be equal to zero', "Column can not be a negative number")
-      ) AS quality_notes
+      IF(user_metadata.store_owner.owner_address.lat IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
     ) AS quality_check
   FROM base
-  WHERE user_metadata.store_owner.owner_address.lat IS NULL or user_metadata.store_owner.owner_address.lat <= 0
+  WHERE user_metadata.store_owner.owner_address.lat IS NULL
 
   UNION ALL
 
@@ -557,12 +555,11 @@ WITH base AS(
 
     STRUCT(
       'long' AS column,
-      IF(user_metadata.store_owner.owner_address.long IS NULL, 'Column can not be NULL', 
-        IF(user_metadata.store_owner.owner_address.long = 0, 'Column can not be equal to zero', "Column can not be a negative number")
+      IF(user_metadata.store_owner.owner_address.long IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
       ) AS quality_notes
     ) AS quality_check
   FROM base
-  WHERE user_metadata.store_owner.owner_address.long IS NULL or user_metadata.store_owner.owner_address.long <= 0
+  WHERE user_metadata.store_owner.owner_address.long IS NULL
 
   -- USER_METADATA.MAIN_ADDRESS
   UNION ALL
