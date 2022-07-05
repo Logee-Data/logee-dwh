@@ -386,7 +386,7 @@ WITH base as(
       IF(latitude IS NULL, 'Column can not be NULL', 'Column can not be equal to zero') AS quality_notes
     ) AS quality_check
   FROM base
-  WHERE latitude IS NULL
+  WHERE latitude IS NULL or latitude  = 0
 
   UNION ALL
 
@@ -399,7 +399,7 @@ WITH base as(
       IF(longitude IS NULL, 'Column can not be NULL', 'Column can not be equal to zero') AS quality_notes
     ) AS quality_check
   FROM base
-  WHERE longitude IS NULL
+  WHERE longitude IS NULL or longitude = 0
 
   UNION ALL
 
