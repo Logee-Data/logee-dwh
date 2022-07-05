@@ -1,6 +1,6 @@
 SELECT
   REPLACE(JSON_EXTRACT(data, '$.brandId'), '"', '') AS brand_id,
-  REPLACE(JSON_EXTRACT(data, '$.companyId'), '"', '') AS company_id	,
+  REPLACE(JSON_EXTRACT(data, '$.companyId'), '"', '') AS company_id,
   REPLACE(JSON_EXTRACT(data, '$.brandName'), '"', '') AS brand_name,
   JSON_EXTRACT_STRING_ARRAY(data, '$.categoryIds') AS category_ids,
   CAST(REPLACE(JSON_EXTRACT(data, '$.isActive'), '"', '') AS BOOL) AS is_active,
