@@ -332,18 +332,6 @@ WITH base as(
   WHERE user_meta.koja_username IS NULL or user_meta.koja_username = ''
 
   -- END USER_META
-
-  UNION ALL
-
-  SELECT
-   user_id,
-    published_timestamp,
-    STRUCT(
-      'is_active' AS column,
-      IF(is_active IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
-    ) AS quality_check
-  FROM base
-  WHERE is_active IS NULL
 )
 -- END CHECK
 
