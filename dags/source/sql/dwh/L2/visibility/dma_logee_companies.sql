@@ -576,18 +576,6 @@ WITH base as(
   SELECT
     company_id,
     published_timestamp,
-    STRUCT(
-      'is_active' AS column,
-      IF(is_active IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
-    ) AS quality_check
-  FROM base
-  WHERE is_active IS NULL
-
-  UNION ALL
-
-  SELECT
-    company_id,
-    published_timestamp,
 
     STRUCT(
       'bank_account_name' AS column,
