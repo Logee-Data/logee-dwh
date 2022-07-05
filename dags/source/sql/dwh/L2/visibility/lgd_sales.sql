@@ -4,7 +4,8 @@ WITH base AS (
   REPLACE(
     TO_HEX(SHA256(username)) AS username,
     TO_HEX(SHA256(email)) AS email,
-    TO_HEX(SHA256(phone_number)) AS phone_number
+    TO_HEX(SHA256(phone_number)) AS phone_number,
+    TO_HEX(SHA256(sales_name)) AS sales_name
     ) 
   FROM 
     `logee-data-prod.L1_visibility.lgd_sales`
