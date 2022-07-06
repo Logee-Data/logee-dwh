@@ -4,7 +4,8 @@ WITH base AS (
   FROM
     `logee-data-prod.logee_datalake_raw_production.visibility_dma_logee_deliverydetails`
   WHERE
-    _date_partition >= "2022-01-01"
+    _date_partition IN ('{{ ds }}', '{{ next_ds }}')
+    AND ts BETWEEN '{{ execution_date }}' AND '{{ next_execution_date }}'
 )
 
 --Begin deliveryDetailStatus
@@ -48,7 +49,7 @@ WITH base AS (
         CAST(IF(JSON_EXTRACT_SCALAR(destination_list, '$.destinationLatitude') = "", NULL, JSON_EXTRACT_SCALAR(destination_list, '$.destinationLatitude')) AS FLOAT64) AS destination_latitude,
         CAST(IF(JSON_EXTRACT_SCALAR(destination_list, '$.destinationLongitude') = "", NULL, JSON_EXTRACT_SCALAR(destination_list, '$.destinationLongitude')) AS FLOAT64) AS destination_longitude,
         IF(JSON_EXTRACT_SCALAR(destination_list, '$.destinationLocation') = "", NULL, JSON_EXTRACT_SCALAR(destination_list, '$.destinationLocation')) AS destination_location,
-        IF(JSON_EXTRACT_SCALAR(destination_list, '$.destinationPicPhone') = "", NULL, JSON_EXTRACT_SCALAR(destination_list, '$.destinationPicPhone')) AS destination_pic_phone,
+        IF(JSON_EXTRACT_SCALAR(destination_list, '$.destinationPicPhone') = "", NULL, JSON_EXTRACT_SCALAR(destination_list, '$.destinationPicPhone')) AS destination_pic_phone
       )
     ) AS destination_list
   FROM
@@ -138,7 +139,6 @@ SELECT
   IF(REPLACE(JSON_EXTRACT(A.data, '$.modifiedBy'), '"', '') = '', NULL, REPLACE(JSON_EXTRACT(A.data, '$.modifiedBy'), '"', '')) AS modified_by,
   CAST(IF(REPLACE(JSON_EXTRACT(A.data, '$.modifiedAt'), '"', '') = '', NULL, REPLACE(JSON_EXTRACT(A.data, '$.modifiedAt'), '"', '')) AS TIMESTAMP) AS modified_at,
   IF(REPLACE(JSON_EXTRACT(A.data, '$.deliveryOrderFile'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(A.data, '$.deliveryOrderFile'), '"', '')) AS delivery_order_file,
-  A.data AS original_data,
   A.ts AS published_timestamp
 FROM
   base A
@@ -150,3 +150,4 @@ FROM
   LEFT JOIN delivery_detail_status C
   ON A.data = C.data
   AND A.ts = C.published_timestamp
+

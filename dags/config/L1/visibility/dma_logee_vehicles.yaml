@@ -1,0 +1,6 @@
+dag_id: L1_visibility_dma_logee_vehicles
+source: logee-data-prod.logee_datalake_raw_production.visibility_dma_logee_vehicles
+destination: logee-data-prod.L1_visibility.dma_logee_vehicles
+sql: source/sql/dwh/L1/visibility/dma_logee_vehicles.sql
+schedule: 0 */3 * * *
+time_partitioning: modified_at

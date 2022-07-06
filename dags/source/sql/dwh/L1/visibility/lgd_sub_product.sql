@@ -79,7 +79,7 @@ SELECT
   REPLACE(JSON_EXTRACT(A.data, '$.productId'), '"', '') AS product_id,
   REPLACE(JSON_EXTRACT(A.data, '$.subProductName'), '"', '') AS sub_product_name,
   REPLACE(JSON_EXTRACT(A.data, '$.subProductSize'), '"', '') AS sub_product_size,
-  JSON_EXTRACT_ARRAY(A.data, '$.subProductColors' AS sub_product_colors,
+  JSON_EXTRACT_ARRAY(A.data, '$.subProductColors') AS sub_product_colors,
   CAST(REPLACE(JSON_EXTRACT(A.data, '$.subProductStock'), '"', '') AS INT64) AS sub_product_stock,
   CAST(REPLACE(JSON_EXTRACT(A.data, '$.subProductDiscountPercent'), '"', '') AS FLOAT64) AS sub_product_discount_percent,
   REPLACE(JSON_EXTRACT(A.data, '$.subProductDescription'), '"', '') AS sub_product_description,
