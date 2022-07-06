@@ -556,7 +556,6 @@ WITH base AS(
     STRUCT(
       'long' AS column,
       IF(user_metadata.store_owner.owner_address.long IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
-      ) AS quality_notes
     ) AS quality_check
   FROM base
   WHERE user_metadata.store_owner.owner_address.long IS NULL
