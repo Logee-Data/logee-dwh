@@ -11,7 +11,7 @@ WITH base AS (
 , check AS (
 
   SELECT
-    original_data,
+    attendance_id,
     published_timestamp,
     STRUCT(
       'attendance_id' AS column,
@@ -23,7 +23,7 @@ WITH base AS (
   UNION ALL
 
  SELECT
-    original_data,
+    attendance_id,
     published_timestamp,
     STRUCT(
       'company_id' AS column,
@@ -35,7 +35,7 @@ WITH base AS (
   UNION ALL
 
   SELECT
-    original_data,
+    attendance_id,
     published_timestamp,
     STRUCT(
       'sales_id' AS column,
@@ -47,7 +47,7 @@ WITH base AS (
   UNION ALL
 
   SELECT
-    original_data,
+    attendance_id,
     published_timestamp,
     STRUCT(
       'sales_name' AS column,
@@ -59,7 +59,7 @@ WITH base AS (
   UNION ALL
 
   SELECT
-    original_data,
+    attendance_id,
     published_timestamp,
     STRUCT(
       'status' AS column,
@@ -72,7 +72,7 @@ WITH base AS (
 
 ,aggregated_check AS (
   SELECT 
-    sales_id,
+    attendance_id,
     published_timestamp,
     ARRAY_AGG(
       quality_check
@@ -87,5 +87,5 @@ SELECT
 FROM
   base A
   LEFT JOIN aggregated_check B
-  ON A.sales_id = B.sales_id
+  ON A.attendance_id = B.attendance_id
   AND A.published_timestamp = B.published_timestamp
