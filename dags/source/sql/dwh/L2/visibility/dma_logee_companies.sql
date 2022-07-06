@@ -279,7 +279,7 @@ WITH base as(
 
     STRUCT(
       'siup_expiry_date' AS column,
-      IF(siup_expiry_date IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
+      'Column can not be NULL' AS quality_notes
     ) AS quality_check
   FROM base
   WHERE siup_expiry_date IS NULL
@@ -416,13 +416,13 @@ WITH base as(
 
   UNION ALL
 
-  SELECT
+   SELECT
     company_id,
     published_timestamp,
 
     STRUCT(
       'pks_expiry_date' AS column,
-      IF(pks_expiry_date IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
+      'Column can not be NULL'AS quality_notes
     ) AS quality_check
   FROM base
   WHERE pks_expiry_date IS NULL
