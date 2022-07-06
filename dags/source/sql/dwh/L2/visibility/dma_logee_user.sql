@@ -235,7 +235,7 @@ WITH base as(
     published_timestamp,
     STRUCT(
       'is_registering_from_app' AS column,
-      IF(user_meta.is_registering_from_app IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
+       'Column can not be NULL' AS quality_notes
     ) AS quality_check
   FROM base
   WHERE user_meta.is_registering_from_app IS NULL
