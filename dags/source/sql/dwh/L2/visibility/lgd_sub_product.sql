@@ -8,22 +8,22 @@ WITH base AS (
 )
 
 
-check AS (
+, check AS (
 
   SELECT
-    original_data,
+    sub_product_id,
     published_timestamp,
     STRUCT(
-      'subProductId' AS column,
-      IF(subProductId IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
+      'sub_product_id' AS column,
+      IF(sub_product_id IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
     ) AS quality_check
   FROM base
-  WHERE subProductId IS NULL or subProductId = ''
+  WHERE sub_product_id IS NULL or sub_product_id = ''
 
   UNION ALL
 
   SELECT
-    original_data,
+    sub_product_id,
     published_timestamp,
     STRUCT(
       'company_id' AS column,
@@ -35,7 +35,7 @@ check AS (
   UNION ALL
 
   SELECT
-    original_data,
+    sub_product_id,
     published_timestamp,
     STRUCT(
       'brand_id' AS column,
@@ -47,7 +47,7 @@ check AS (
   UNION ALL
 
   SELECT
-    original_data,
+    sub_product_id,
     published_timestamp,
     STRUCT(
       'category_id' AS column,
@@ -59,7 +59,7 @@ check AS (
   UNION ALL
 
    SELECT
-    original_data,
+    sub_product_id,
     published_timestamp,
     STRUCT(
       'product_id' AS column,
@@ -71,7 +71,7 @@ check AS (
   UNION ALL
 
  SELECT
-    original_data,
+    sub_product_id,
     published_timestamp,
     STRUCT(
       'sub_product_name' AS column,
@@ -83,7 +83,7 @@ check AS (
   UNION ALL
 
   SELECT
-    original_data,
+    sub_product_id,
     published_timestamp,
     STRUCT(
       'sub_product_size' AS column,
@@ -95,7 +95,7 @@ check AS (
   UNION ALL
 
   SELECT
-    original_data,
+    sub_product_id,
     published_timestamp,
     STRUCT(
       'sub_product_discount_percent' AS column,
@@ -107,7 +107,7 @@ check AS (
   UNION ALL
 
   SELECT
-    original_data,
+    sub_product_id,
     published_timestamp,
     STRUCT(
       'sub_product_description' AS column,
@@ -119,7 +119,7 @@ check AS (
   UNION ALL
 
   SELECT
-    original_data,
+    sub_product_id,
     published_timestamp,
     STRUCT(
       'sub_product_unit' AS column,
@@ -131,7 +131,7 @@ check AS (
   UNION ALL
 
   SELECT
-    original_data,
+    sub_product_id,
     published_timestamp,
     STRUCT(
       'sub_product_price' AS column,
@@ -143,7 +143,7 @@ check AS (
   UNION ALL
 
   SELECT
-    original_data,
+    sub_product_id,
     published_timestamp,
     STRUCT(
       'sub_product_weight' AS column,
@@ -155,7 +155,7 @@ check AS (
   UNION ALL
 
   SELECT
-    original_data,
+    sub_product_id,
     published_timestamp,
     STRUCT(
       'external_id' AS column,
@@ -167,7 +167,7 @@ check AS (
   UNION ALL
 
   SELECT
-    original_data,
+    sub_product_id,
     published_timestamp,
     STRUCT(
       'sub_product_stock' AS column,
@@ -180,7 +180,7 @@ check AS (
   UNION ALL
 
   SELECT
-    original_data,
+    sub_product_id,
     published_timestamp,
     STRUCT(
       'sub_product_stock' AS column,
@@ -193,7 +193,7 @@ check AS (
   UNION ALL
 
   SELECT
-    original_data,
+    sub_product_id,
     published_timestamp,
     STRUCT(
       'sub_product_stock' AS column,
@@ -206,7 +206,7 @@ check AS (
   UNION ALL
 
 SELECT
-    original_data,
+    sub_product_id,
     published_timestamp,
     STRUCT(
       'sub_product_stock' AS column,
@@ -219,7 +219,7 @@ SELECT
   UNION ALL
   
   SELECT
-    original_data,
+    sub_product_id,
     published_timestamp,
     STRUCT(
       'on_shelf' AS column,
@@ -232,7 +232,7 @@ SELECT
   UNION ALL
 
   SELECT
-    original_data,
+    sub_product_id,
     published_timestamp,
     STRUCT(
       'on_shelf' AS column,
@@ -245,7 +245,7 @@ SELECT
   UNION ALL
 
   SELECT
-    original_data,
+    sub_product_id,
     published_timestamp,
     STRUCT(
       'product_on_shelf' AS column,
@@ -258,7 +258,7 @@ SELECT
   UNION ALL
 
   SELECT
-    original_data,
+    sub_product_id,
     published_timestamp,
     STRUCT(
       'product_on_shelf' AS column,
@@ -271,7 +271,7 @@ SELECT
   UNION ALL
 
   SELECT
-    original_data,
+    sub_product_id,
     published_timestamp,
     STRUCT(
       'sub_products_size' AS column,
@@ -283,7 +283,7 @@ SELECT
   UNION ALL
 
   SELECT
-    original_data,
+    sub_product_id,
     published_timestamp,
     STRUCT(
       'sub_product_minimum_order' AS column,
@@ -295,7 +295,7 @@ SELECT
   UNION ALL
 
   SELECT
-    original_data,
+    sub_product_id,
     published_timestamp,
     STRUCT(
       'sub_product_stock_on_hold' AS column,
@@ -307,7 +307,7 @@ SELECT
   UNION ALL
 
   SELECT
-    original_data,
+    sub_product_id,
     published_timestamp,
     STRUCT(
       'is_tax' AS column,
@@ -319,7 +319,7 @@ SELECT
     UNION ALL
 
   SELECT
-    original_data,
+    sub_product_id,
     published_timestamp,
     STRUCT(
       'is_bonus' AS column,
@@ -332,7 +332,7 @@ SELECT
 
 ,aggregated_check AS (
   SELECT 
-    subProductId,
+    sub_product_id,
     published_timestamp,
     ARRAY_AGG(
       quality_check
@@ -347,5 +347,5 @@ SELECT
 FROM
   base A
   LEFT JOIN aggregated_check B
-  ON A.subProductId = B.subProductId
+  ON A.sub_product_id = B.sub_product_id
   AND A.published_timestamp = B.published_timestamp
