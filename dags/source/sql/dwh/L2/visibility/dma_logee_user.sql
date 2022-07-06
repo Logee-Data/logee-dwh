@@ -6,6 +6,7 @@ WITH base as(
         REPLACE(
         TO_HEX(SHA256(phone)) AS phone,
         TO_HEX(SHA256(email)) AS email,
+        TO_HEX(SHA256(name)) AS name,
         STRUCT (
             TO_HEX(SHA256(user_meta.phone)) AS phone,
             TO_HEX(SHA256(user_meta.ktp_num)) AS ktp_num,
