@@ -124,6 +124,31 @@ WITH base as(
   WHERE unseen IS NULL or unseen = ''
 
   UNION ALL
+  
+  SELECT
+    user_id,
+    published_timestamp,
+
+    STRUCT(
+      'assign_indicar' AS column,
+      'Column can not be NULL' AS quality_notes
+    ) AS quality_check
+  FROM base
+  WHERE assign_indicar IS NULL
+    
+  UNION ALL
+
+  SELECT
+    user_id,
+    published_timestamp,
+
+    STRUCT(
+      'show_tracking' AS column,
+      'Column can not be NULL' AS quality_notes
+    ) AS quality_check
+  FROM base
+
+  UNION ALL
 
   -- START USER_META
 
