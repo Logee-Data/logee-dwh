@@ -383,10 +383,10 @@ WITH base as(
 
     STRUCT(
       'latitude' AS column,
-      IF(latitude IS NULL, 'Column can not be NULL', 'Column can not be equal to zero') AS quality_notes
+     'Column can not be NULL' AS quality_notes
     ) AS quality_check
   FROM base
-  WHERE latitude IS NULL or latitude  = 0
+  WHERE latitude IS NULL
 
   UNION ALL
 
@@ -396,10 +396,10 @@ WITH base as(
 
     STRUCT(
       'longitude' AS column,
-      IF(longitude IS NULL, 'Column can not be NULL', 'Column can not be equal to zero') AS quality_notes
+      'Column can not be NULL' AS quality_notes
     ) AS quality_check
   FROM base
-  WHERE longitude IS NULL or longitude = 0
+  WHERE longitude IS NULL
 
   UNION ALL
 
