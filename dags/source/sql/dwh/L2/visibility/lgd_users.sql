@@ -751,9 +751,7 @@ WITH base AS(
 
     STRUCT(
       'lat' AS column,
-      IF(user_metadata.main_address.lat IS NULL, 'Column can not be NULL', 
-        IF(user_metadata.main_address.lat = 0, 'Column can not be equal to zero', "Column can not be a negative number")
-      ) AS quality_notes
+      IF(user_metadata.main_address.lat IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
     ) AS quality_check
   FROM base
   WHERE user_metadata.main_address.lat IS NULL or user_metadata.main_address.lat = 0
@@ -766,9 +764,7 @@ WITH base AS(
 
     STRUCT(
       'long' AS column,
-      IF(user_metadata.main_address.long IS NULL, 'Column can not be NULL', 
-        IF(user_metadata.main_address.long = 0, 'Column can not be equal to zero', "Column can not be a negative number")
-      ) AS quality_notes
+      IF(user_metadata.main_address.long IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
     ) AS quality_check
   FROM base
   WHERE user_metadata.main_address.long IS NULL or user_metadata.main_address.long <= 0
