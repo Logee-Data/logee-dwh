@@ -7,12 +7,16 @@ WITH base AS (
       TO_HEX(SHA256(email)) AS email,
       TO_HEX(SHA256(ktp_num)) AS ktp_num,
       TO_HEX(SHA256(sim_num)) AS sim_num,
+      TO_HEX(SHA256(address)) AS address,
+      TO_HEX(SHA256(image_sim)) AS image_sim,
+      TO_HEX(SHA256(image_ktp)) AS image_ktp,
+      TO_HEX(SHA256(avatar)) AS avatar,
       TO_HEX(SHA256(STRING(date_of_birth))) AS date_of_birth
     )
   FROM
     `logee-data-prod.L1_visibility.dma_logee_drivers`
-  WHERE
-    modified_at BETWEEN '{{ execution_date }}' AND '{{ next_execution_date }}'
+  -- WHERE
+  --   modified_at BETWEEN '{{ execution_date }}' AND '{{ next_execution_date }}'
 )
 
 ,check AS (
@@ -61,6 +65,66 @@ WITH base AS (
     ) AS quality_check
   FROM base
   WHERE email IS NULL or email = ''
+
+  UNION ALL
+
+  SELECT
+    driver_id,
+    published_timestamp,
+    STRUCT(
+      'image_sim' AS column,
+      IF(image_sim IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
+    ) AS quality_check
+  FROM base
+  WHERE image_sim IS NULL or image_sim = ''
+
+  UNION ALL
+
+  SELECT
+    driver_id,
+    published_timestamp,
+    STRUCT(
+      'image_ktp' AS column,
+      IF(image_ktp IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
+    ) AS quality_check
+  FROM base
+  WHERE image_ktp IS NULL or image_ktp = ''
+
+  UNION ALL
+
+  SELECT
+    driver_id,
+    published_timestamp,
+    STRUCT(
+      'avatar' AS column,
+      IF(avatar IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
+    ) AS quality_check
+  FROM base
+  WHERE avatar IS NULL or avatar = ''
+
+  UNION ALL
+
+  SELECT
+    driver_id,
+    published_timestamp,
+    STRUCT(
+      'driver_status' AS column,
+      'Column can not be NULL' AS quality_notes
+    ) AS quality_check
+  FROM base
+  WHERE driver_status IS NULL
+
+  UNION ALL
+
+  SELECT
+    driver_id,
+    published_timestamp,
+    STRUCT(
+      'modified_by' AS column,
+      IF(modified_by IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
+    ) AS quality_check
+  FROM base
+  WHERE modified_by IS NULL or modified_by = ''
 
   UNION ALL
 
