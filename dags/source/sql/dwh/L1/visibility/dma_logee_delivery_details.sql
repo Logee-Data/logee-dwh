@@ -75,7 +75,7 @@ SELECT
   CAST(JSON_EXTRACT_SCALAR(A.data, '$.itemLength') AS FLOAT64) AS item_length,
   CAST(JSON_EXTRACT_SCALAR(A.data, '$.itemWeight') AS FLOAT64) AS item_weight,
   CAST(JSON_EXTRACT_SCALAR(A.data, '$.itemWidth') AS FLOAT64) AS item_width,
-  REPLACE(JSON_EXTRACT(A.data, '$.itemName'), '"', '') AS item_name,
+  CAST(IF(REPLACE(JSON_EXTRACT_SCALAR(A.data, '$.itemValue'), ' ', '') = '', NULL, REPLACE(JSON_EXTRACT_SCALAR(A.data, '$.itemValue'), ' ', '')) AS FLOAT64) AS item_value,
   REPLACE(JSON_EXTRACT(A.data, '$.itemPackage'), '"', '') AS item_package,
   CAST(REPLACE(JSON_EXTRACT(A.data, '$.itemValue'), '"', '') AS FLOAT64) AS item_value,
   REPLACE(JSON_EXTRACT(A.data, '$.orderNumber'), '"', '') AS order_number,
