@@ -72,7 +72,7 @@ base AS (
 -- END BOOKED STOCK
 
 SELECT
-  IF(REPLACE(JSON_EXTRACT(A.data, '$.subProductId'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(A.data, '$.subProductId'), '"', '')) AS subProductId,
+  IF(REPLACE(JSON_EXTRACT(A.data, '$.subProductId'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(A.data, '$.subProductId'), '"', '')) AS sub_product_id,
   IF(REPLACE(JSON_EXTRACT(A.data, '$.companyId'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(A.data, '$.companyId'), '"', '')) AS company_id,
   IF(REPLACE(JSON_EXTRACT(A.data, '$.brandId'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(A.data, '$.brandId'), '"', '')) AS brand_id,
   IF(REPLACE(JSON_EXTRACT(A.data, '$.categoryId'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(A.data, '$.categoryId'), '"', '')) AS category_id,
