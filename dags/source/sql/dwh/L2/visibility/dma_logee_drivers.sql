@@ -144,11 +144,11 @@ WITH base AS (
     driver_id,
     published_timestamp,
     STRUCT(
-      'sim_expired' AS column,
+      'sim_expiry_date' AS column,
       'Column can not be NULL' AS quality_notes
     ) AS quality_check
   FROM base
-  WHERE sim_expired IS NULL
+  WHERE sim_expiry_date IS NULL
 
   UNION ALL
 
