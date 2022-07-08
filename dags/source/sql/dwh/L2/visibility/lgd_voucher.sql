@@ -12,7 +12,20 @@ WITH base AS (
 
 ,check AS (
   SELECT
-  voucher_code,
+  voucher_id,
+  published_timestamp,
+
+  STRUCT(
+    'voucher_id' AS column,
+    IF(voucher_id IS NULL, 'Column can not be Null', 'Column can not be an empty string') AS quality_notes
+  ) AS quality_check
+  FROM base
+  WHERE voucher_id IS NULL or voucher_id = ''
+
+  UNION ALL
+
+  SELECT
+  voucher_id,
   published_timestamp,
 
   STRUCT(
@@ -25,7 +38,7 @@ WITH base AS (
   UNION ALL
 
   SELECT
-    voucher_code,
+    voucher_id,
     published_timestamp,
 
     STRUCT(
@@ -38,7 +51,7 @@ WITH base AS (
   UNION ALL
 
   SELECT
-    voucher_code,
+    voucher_id,
     published_timestamp,
 
   STRUCT(
@@ -51,7 +64,7 @@ WITH base AS (
   UNION ALL
 
   SELECT
-    voucher_code,
+    voucher_id,
     published_timestamp,
 
   STRUCT(
@@ -64,7 +77,7 @@ WITH base AS (
   UNION ALL
 
   SELECT
-    voucher_code,
+    voucher_id,
     published_timestamp,
 
   STRUCT(
@@ -77,7 +90,7 @@ WITH base AS (
   UNION ALL
 
   SELECT
-    voucher_code,
+    voucher_id,
     published_timestamp,
 
   STRUCT(
@@ -92,7 +105,7 @@ WITH base AS (
 
 ,aggregated_check AS (
   SELECT 
-    voucher_code,
+    voucher_id,
     published_timestamp,
     ARRAY_AGG(
       quality_check
@@ -106,5 +119,5 @@ A. *,
 B.quality_check
 FROM base A
   LEFT JOIN aggregated_check B
-  ON A.voucher_code = B.voucher_code
+  ON A.voucher_id = B.voucher_id
   AND A.published_timestamp = B.published_timestamp
