@@ -39,7 +39,8 @@ WITH base AS (
 
 -- End
 
-SELECT 
+SELECT
+  REPLACE(JSON_EXTRACT(A.data, '$.voucherId'), '"', '') AS voucher_id,
   REPLACE(JSON_EXTRACT(A.data, '$.voucherCode'), '"', '') AS voucher_code,
   CAST(REPLACE(JSON_EXTRACT(A.data, '$.amount'), '"', '') AS FLOAT64) AS amount,
   REPLACE(JSON_EXTRACT(A.data, '$.orderId'), '"', '') AS order_id,
