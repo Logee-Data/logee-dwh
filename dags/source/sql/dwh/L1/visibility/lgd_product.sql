@@ -103,6 +103,6 @@ SELECT
   CAST(JSON_EXTRACT_SCALAR(B.data, '$.insert_date_dma') AS TIMESTAMP) AS insert_date_dma,
   B.published_timestamp
 FROM product_variant A
-  FULL OUTER JOIN pre_data B
+  RIGHT JOIN pre_data B
   ON A.data = B.data
   AND A.published_timestamp = B.published_timestamp
