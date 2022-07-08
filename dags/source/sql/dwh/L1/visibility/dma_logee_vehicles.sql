@@ -28,7 +28,7 @@ SELECT
   REPLACE(JSON_EXTRACT(data, '$.createdBy'), '"', '') AS created_by,
   CAST(REPLACE(JSON_EXTRACT(data, '$.modifiedAt'), '"', '') AS TIMESTAMP) AS modified_at,
   REPLACE(JSON_EXTRACT(data, '$.modifiedBy'), '"', '') AS modified_by,
-  data AS original_data,
-  ts AS published_timstamp
+  ts AS published_timestamp
 FROM `logee-data-prod.logee_datalake_raw_production.visibility_dma_logee_vehicles` 
-WHERE _date_partition >= "2022-01-01"
+WHERE _date_partition IN ('{{ ds }}', '{{ next_ds }}')
+    AND ts BETWEEN '{{ execution_date }}' AND '{{ next_execution_date }}'

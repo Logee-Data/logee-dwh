@@ -49,16 +49,19 @@ default_args = {
 
 for job in all_jobs:
 
-    dag = DAG(
-        dag_id=job.get('dag_id'),
-        schedule_interval=job.get('schedule'),
-        default_args=default_args,
-        catchup=False
-    )
+    dag_id = job.get('dag_id')
+
+    if dag_list.get(dag_id) is None:
+        dag_list[dag_id] = DAG(
+            dag_id=dag_id,
+            schedule_interval=job.get('schedule'),
+            default_args=default_args,
+            catchup=False
+        )
 
     wait = TimeDeltaSensor(
         task_id='wait_for_data',
-        dag=dag,
+        dag=dag_list[dag_id],
         delta=timedelta(minutes=5)
     )
 
@@ -72,7 +75,7 @@ for job in all_jobs:
             task_id = f'{external_dag_id}_{external_task}'
             external_task = ExternalTaskSensor(
                 task_id=f'wait_{task_id}',
-                dag=dag,
+                dag=dag_list[dag_id],
                 external_dag_id=external_dag_id,
                 external_task_id=external_task
             )
@@ -82,7 +85,7 @@ for job in all_jobs:
 
     l2_sql_run_operator = BigQueryExecuteQueryOperator(
         task_id='move_L1_to_L2',
-        dag=dag,
+        dag=dag_list[dag_id],
         sql=job.get('sql'),
         destination_dataset_table=job.get('destination'),
         write_disposition='WRITE_APPEND',
@@ -105,3 +108,6 @@ for job in all_jobs:
 
     for i in dependency_list:
         i >> l2_sql_run_operator
+
+for _dag in dag_list:
+    globals()[_dag] = dag_list.get(_dag)

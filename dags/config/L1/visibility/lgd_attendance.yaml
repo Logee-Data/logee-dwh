@@ -1,0 +1,6 @@
+dag_id: L1_visibility_lgd_attendance
+source: logee-data-prod.logee_datalake_raw_production.visibility_lgd_attendance
+destination: logee-data-prod.L1_visibility.lgd_attendance
+sql: source/sql/dwh/L1/visibility/lgd_attendance.sql
+schedule: 0 */3 * * *
+time_partitioning: modified_at
