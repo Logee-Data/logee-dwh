@@ -1,0 +1,10 @@
+dag_id: L2_visibility_lgd_users
+source: logee-data-prod.L1_visibility.lgd_users
+destination: logee-data-prod.L2_visibility.lgd_users
+sql: source/sql/dwh/L2/visibility/lgd_users.sql
+schedule: 0 */3 * * *
+time_partitioning: modified_at
+depends_on:
+  - dag_id: L1_visibility_lgd_users
+    task_id:
+      - move_raw_to_L1

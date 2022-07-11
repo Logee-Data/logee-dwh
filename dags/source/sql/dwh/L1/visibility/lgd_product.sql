@@ -36,8 +36,6 @@ WITH base AS (
   FROM
     BASE,
     UNNEST(JSON_EXTRACT_ARRAY(REPLACE(REPLACE(REPLACE(JSON_EXTRACT(data, '$.productVariant'), '\\', ''), '\"[', '['), ']\"', ']'), '$.')) AS product_variant
-  WHERE
-    _date_partition >= '2022-01-01'
 )
 
 ,product_variant_2 AS (
@@ -88,7 +86,7 @@ SELECT
   CAST(JSON_EXTRACT_SCALAR(B.data, '$.onShelf') AS BOOL) AS on_shelf,
   IF(JSON_EXTRACT_SCALAR(B.data, '$.externalId') = '', NULL, JSON_EXTRACT_SCALAR(B.data, '$.externalId')) AS external_id,
   IF(JSON_EXTRACT_SCALAR(B.data, '$.productSpesification') = '', NULL, JSON_EXTRACT_SCALAR(B.data, '$.productSpesification')) AS product_spesification,
-  JSON_EXTRACT_SCALAR(B.data, '$.productDescription') AS product_description,
+  IF(JSON_EXTRACT_SCALAR(B.data, '$.productDescription') = ' ', NULL, JSON_EXTRACT_SCALAR(B.data, '$.productDescription')) AS product_description,
   JSON_EXTRACT_SCALAR(B.data, '$.productUnit') AS product_unit,
   CAST(JSON_EXTRACT_SCALAR(B.data, '$.productWeight') AS FLOAT64) AS product_weight,
   CAST(JSON_EXTRACT_SCALAR(B.data, '$.productPrice') AS FLOAT64) AS product_price,
@@ -105,6 +103,6 @@ SELECT
   CAST(JSON_EXTRACT_SCALAR(B.data, '$.insert_date_dma') AS TIMESTAMP) AS insert_date_dma,
   B.published_timestamp
 FROM product_variant A
-  FULL OUTER JOIN pre_data B
+  RIGHT JOIN pre_data B
   ON A.data = B.data
   AND A.published_timestamp = B.published_timestamp
