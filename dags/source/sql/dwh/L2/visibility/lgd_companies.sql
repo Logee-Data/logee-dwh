@@ -13,8 +13,8 @@ WITH base as(
     ) AS bank_account
     )
   FROM `logee-data-prod.L1_visibility.lgd_companies`
-  -- WHERE
-  --   modified_at BETWEEN '{{ execution_date }}' AND '{{ next_execution_date }}'
+  WHERE
+     modified_at BETWEEN '{{ execution_date }}' AND '{{ next_execution_date }}'
 )
 
 
@@ -395,7 +395,6 @@ WITH base as(
 
 SELECT
   *
-  -- ,
   -- B.quality_check
 FROM 
   base 
