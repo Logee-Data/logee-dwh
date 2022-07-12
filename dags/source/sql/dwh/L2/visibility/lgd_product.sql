@@ -53,10 +53,10 @@ WITH base AS (
     published_timestamp,
     STRUCT(
       'product_length' AS column,
-      IF(product_length IS NULL, 'Column can not be NULL', IF(product_length = 0, 'Column can not be equal to zero', 'Column can not be a negative number')) AS quality_notes
+      IF(product_dimension.length IS NULL, 'Column can not be NULL', IF(product_dimension.length = 0, 'Column can not be equal to zero', 'Column can not be a negative number')) AS quality_notes
     ) AS quality_check
   FROM base
-  WHERE product_length IS NULL or product_length <= 0
+  WHERE product_dimension.length IS NULL or product_dimension.length <= 0
 
   UNION ALL
 
@@ -65,10 +65,10 @@ WITH base AS (
     published_timestamp,
     STRUCT(
       'product_height' AS column,
-      IF(product_height IS NULL, 'Column can not be NULL', IF(product_height = 0, 'Column can not be equal to zero', 'Column can not be a negative number')) AS quality_notes
+      IF(product_dimension.height IS NULL, 'Column can not be NULL', IF(product_dimension.height = 0, 'Column can not be equal to zero', 'Column can not be a negative number')) AS quality_notes
     ) AS quality_check
   FROM base
-  WHERE product_height IS NULL or product_height <= 0
+  WHERE product_dimension.height IS NULL or product_dimension.height <= 0
 
   UNION ALL
 
@@ -77,10 +77,10 @@ WITH base AS (
     published_timestamp,
     STRUCT(
       'product_width' AS column,
-      IF(product_width IS NULL, 'Column can not be NULL', IF(product_width = 0, 'Column can not be equal to zero', 'Column can not be a negative number')) AS quality_notes
+      IF(product_dimension.width IS NULL, 'Column can not be NULL', IF(product_dimension.width = 0, 'Column can not be equal to zero', 'Column can not be a negative number')) AS quality_notes
     ) AS quality_check
   FROM base 
-  WHERE product_width IS NULL or product_width <= 0
+  WHERE product_dimension.width IS NULL or product_dimension.width <= 0
 
   UNION ALL
 
@@ -89,10 +89,10 @@ WITH base AS (
     published_timestamp,
     STRUCT(
       'product_category_id' AS column,
-      IF(product_category_id IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
+      IF(category_ids.category_id IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
     ) AS quality_check
   FROM base 
-  WHERE product_category_id IS NULL or product_category_id = ''
+  WHERE category_ids.category_id IS NULL or category_ids.category_id = ''
 
   UNION ALL
 
@@ -101,10 +101,10 @@ WITH base AS (
     published_timestamp,
     STRUCT(
       'product_sub_category_id' AS column,
-      IF(product_sub_category_id IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
+      IF(category_ids.sub_category_id IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
     ) AS quality_check
   FROM base
-  WHERE product_sub_category_id IS NULL or product_sub_category_id = ''
+  WHERE category_ids.sub_category_id IS NULL or category_ids.sub_category_id = ''
 
   UNION ALL
 
@@ -113,10 +113,10 @@ WITH base AS (
     published_timestamp,
     STRUCT(
       'product_sub_sub_category_id' AS column,
-      IF(product_sub_sub_category_id IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
+      IF(category_ids.sub_sub_category_id IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
     ) AS quality_check
   FROM base
-  WHERE product_sub_sub_category_id IS NULL or product_sub_sub_category_id = ''
+  WHERE category_ids.sub_sub_category_id IS NULL or category_ids.sub_sub_category_id = ''
 
   UNION ALL
 
@@ -223,11 +223,11 @@ WITH base AS (
     published_timestamp,
     STRUCT(
       'product_stock' AS column,
-      "Contains zero product_stock when value of is_on_shelf is TRUE" AS notes
+      "Contains zero product_stock when value of on_shelf is TRUE" AS notes
     ) quality_check
   FROM base
   WHERE
-    product_stock = 0 AND is_on_shelf = TRUE
+    product_stock = 0 AND on_shelf = TRUE
 
   UNION ALL
 
@@ -235,12 +235,12 @@ WITH base AS (
     product_id,
     published_timestamp,
     STRUCT(
-      'is_on_shelf' AS column,
-      "is_on_shelf is TRUE when value of product_stock equals zero" AS notes
+      'on_shelf' AS column,
+      "on_shelf is TRUE when value of product_stock equals zero" AS notes
     ) AS quality_check
   FROM base
   WHERE
-    product_stock = 0 AND is_on_shelf = TRUE
+    product_stock = 0 AND on_shelf = TRUE
 
   UNION ALL
 
@@ -249,11 +249,11 @@ WITH base AS (
     published_timestamp,
     STRUCT(
       'product_stock' AS column,
-      "Contains a number of product_stock when value of is_on_shelf is FALSE" AS notes
+      "Contains a number of product_stock when value of on_shelf is FALSE" AS notes
     ) quality_check
   FROM base
   WHERE
-    product_stock > 0 AND is_on_shelf = FALSE
+    product_stock > 0 AND on_shelf = FALSE
 
   UNION ALL
 
@@ -261,12 +261,12 @@ WITH base AS (
     product_id,
     published_timestamp,
     STRUCT(
-      'is_on_shelf' AS column,
-      "is_on_shelf is FALSE when value of product_stock equals non zero value" AS notes
+      'on_shelf' AS column,
+      "on_shelf is FALSE when value of product_stock equals non zero value" AS notes
     ) AS quality_check
   FROM base
   WHERE
-    product_stock > 0 AND is_on_shelf = FALSE
+    product_stock > 0 AND on_shelf = FALSE
 
   UNION ALL
 
