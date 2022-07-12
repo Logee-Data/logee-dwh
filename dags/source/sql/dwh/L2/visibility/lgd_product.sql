@@ -306,10 +306,10 @@ WITH base AS (
 -- )
 
 SELECT
-  A.*,
+  A.*
   -- B.quality_check
 FROM
-  base  A
+  base A
   -- LEFT JOIN aggregated_check B
   -- ON A.product_id = B.product_id
   -- AND A.published_timestamp = B.published_timestamp
