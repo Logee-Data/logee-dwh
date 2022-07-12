@@ -32,8 +32,8 @@ WITH base as(
         )
     FROM 
         `logee-data-prod.L1_visibility.dma_logee_companies`
-    -- WHERE
-    --     modified_at BETWEEN '{{ execution_date }}' AND '{{ next_execution_date }}'
+    WHERE
+         modified_at BETWEEN '{{ execution_date }}' AND '{{ next_execution_date }}'
 )
 
 -- -- BEGIN CHECK
