@@ -10,95 +10,95 @@ WITH base AS (
 )
 
 
-,check AS (
-  SELECT
-  voucher_id,
-  published_timestamp,
+-- ,check AS (
+--   SELECT
+--   voucher_id,
+--   published_timestamp,
 
-  STRUCT(
-    'voucher_id' AS column,
-    IF(voucher_id IS NULL, 'Column can not be Null', 'Column can not be an empty string') AS quality_notes
-  ) AS quality_check
-  FROM base
-  WHERE voucher_id IS NULL or voucher_id = ''
+--   STRUCT(
+--     'voucher_id' AS column,
+--     IF(voucher_id IS NULL, 'Column can not be Null', 'Column can not be an empty string') AS quality_notes
+--   ) AS quality_check
+--   FROM base
+--   WHERE voucher_id IS NULL or voucher_id = ''
 
-  UNION ALL
+--   UNION ALL
 
-  SELECT
-  voucher_id,
-  published_timestamp,
+--   SELECT
+--   voucher_id,
+--   published_timestamp,
 
-  STRUCT(
-    'voucher_code' AS column,
-    IF(voucher_code IS NULL, 'Column can not be Null', 'Column can not be an empty string') AS quality_notes
-  ) AS quality_check
-  FROM base
-  WHERE voucher_code IS NULL or voucher_code = ''
+--   STRUCT(
+--     'voucher_code' AS column,
+--     IF(voucher_code IS NULL, 'Column can not be Null', 'Column can not be an empty string') AS quality_notes
+--   ) AS quality_check
+--   FROM base
+--   WHERE voucher_code IS NULL or voucher_code = ''
 
-  UNION ALL
+--   UNION ALL
 
-  SELECT
-    voucher_id,
-    published_timestamp,
+--   SELECT
+--     voucher_id,
+--     published_timestamp,
 
-    STRUCT(
-      'amount' AS column,
-      IF(amount IS NULL, 'Column can not be NULL', IF(amount = 0, 'Column can not be equal to zero', "Column can not be a negative number")) AS quality_notes
-    ) AS quality_check
-  FROM base
-  WHERE amount IS NULL or amount <= 0
+--     STRUCT(
+--       'amount' AS column,
+--       IF(amount IS NULL, 'Column can not be NULL', IF(amount = 0, 'Column can not be equal to zero', "Column can not be a negative number")) AS quality_notes
+--     ) AS quality_check
+--   FROM base
+--   WHERE amount IS NULL or amount <= 0
 
-  UNION ALL
+--   UNION ALL
 
-  SELECT
-    voucher_id,
-    published_timestamp,
+--   SELECT
+--     voucher_id,
+--     published_timestamp,
 
-  STRUCT(
-    'order_id' AS column,
-    IF(order_id IS NULL, 'Column can not be Null', 'Column can not be an empty string') AS quality_notes
-  ) AS quality_check
-  FROM base
-  WHERE order_id IS NULL or order_id = ''
+--   STRUCT(
+--     'order_id' AS column,
+--     IF(order_id IS NULL, 'Column can not be Null', 'Column can not be an empty string') AS quality_notes
+--   ) AS quality_check
+--   FROM base
+--   WHERE order_id IS NULL or order_id = ''
 
-  UNION ALL
+--   UNION ALL
 
-  SELECT
-    voucher_id,
-    published_timestamp,
+--   SELECT
+--     voucher_id,
+--     published_timestamp,
 
-  STRUCT(
-    'voucher_title' AS column,
-    IF(voucher_title IS NULL, 'Column can not be Null', 'Column can not be an empty string') AS quality_notes
-  ) AS quality_check
-  FROM base
-  WHERE voucher_title IS NULL or voucher_title= ''
+--   STRUCT(
+--     'voucher_title' AS column,
+--     IF(voucher_title IS NULL, 'Column can not be Null', 'Column can not be an empty string') AS quality_notes
+--   ) AS quality_check
+--   FROM base
+--   WHERE voucher_title IS NULL or voucher_title= ''
 
-  UNION ALL
+--   UNION ALL
 
-  SELECT
-    voucher_id,
-    published_timestamp,
+--   SELECT
+--     voucher_id,
+--     published_timestamp,
 
-  STRUCT(
-    'voucher_description' AS column,
-    IF(voucher_description IS NULL, 'Column can not be Null', 'Column can not be an empty string') AS quality_notes
-  ) AS quality_check
-  FROM base
-  WHERE voucher_description IS NULL or voucher_description = ''
+--   STRUCT(
+--     'voucher_description' AS column,
+--     IF(voucher_description IS NULL, 'Column can not be Null', 'Column can not be an empty string') AS quality_notes
+--   ) AS quality_check
+--   FROM base
+--   WHERE voucher_description IS NULL or voucher_description = ''
 
-  UNION ALL
+--   UNION ALL
 
-  SELECT
-    voucher_id,
-    published_timestamp,
+--   SELECT
+--     voucher_id,
+--     published_timestamp,
 
-  STRUCT(
-    'voucher_status' AS column,
-    IF(voucher_status IS NULL, 'Column can not be Null', 'Column can not be an empty string') AS quality_notes
-  ) AS quality_check
-  FROM base
-  WHERE voucher_status IS NULL or voucher_status = ''
+--   STRUCT(
+--     'voucher_status' AS column,
+--     IF(voucher_status IS NULL, 'Column can not be Null', 'Column can not be an empty string') AS quality_notes
+--   ) AS quality_check
+--   FROM base
+--   WHERE voucher_status IS NULL or voucher_status = ''
   
 -- )
 
