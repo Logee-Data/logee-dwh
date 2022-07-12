@@ -4,400 +4,658 @@ WITH base as(
    SELECT 
     * 
     REPLACE(
-    TO_HEX(SHA256(company_phone_number)) AS company_phone_number,
-    TO_HEX(SHA256(company_address)) AS company_address,
-    STRUCT(
-      TO_HEX(SHA256(bank_account.account_name)) AS account_name,
-      TO_HEX(SHA256(bank_account.account_number)) AS account_number,
-      bank_account.bank_name AS bank_name
-    ) AS bank_account
+      TO_HEX(SHA256(username)) AS username,
+      STRUCT(
+        STRUCT(
+        TO_HEX(SHA256(store_owner.owner_address.address)) AS address,
+        store_owner.owner_address.lat AS lat,
+        store_owner.owner_address.long AS long,
+        store_owner.owner_address.province_id AS province_id,
+        store_owner.owner_address.province AS province,
+        store_owner.owner_address.city_id AS city_id,
+        store_owner.owner_address.city AS city,
+        store_owner.owner_address.district_id AS district_id,
+        store_owner.owner_address.district AS district,
+        store_owner.owner_address.sub_district_id AS sub_district_id,
+        store_owner.owner_address.sub_district AS sub_district,
+        store_owner.owner_address.zip_code_id AS zip_code_id,
+        store_owner.owner_address.zip_code AS zip_code,
+        store_owner.owner_address.address_mark AS address_mark
+      ) AS owner_address,
+      store_owner.owner_name AS owner_name,
+      TO_HEX(SHA256(store_owner.owner_phone_number)) AS owner_phone_number
+      )AS store_owner,
+      STRUCT(
+        main_address.store_name AS store_name,
+        TO_HEX(SHA256(main_address.address)) AS address,
+        main_address.lat AS lat,
+        main_address.long AS long,
+        main_address.province_id AS province_id,
+        main_address.province AS province,
+        main_address.city_id AS city_id,
+        main_address.city AS city,
+        main_address.district_id AS district_id,
+        main_address.district AS district,
+        main_address.sub_district_id AS sub_district_id,
+        main_address.sub_district AS sub_district,
+        main_address.zip_code_id AS zip_code_id,
+        main_address.zip_code AS zip_code,
+        main_address.external_id AS external_id,
+        main_address.recipient_name AS recipient_name,
+        main_address.main_address AS main_address,
+        main_address.address_mark AS address_mark,
+        main_address.is_fulfillment_process AS is_fulfillment_process,
+        TO_HEX(SHA256(main_address.phone_number)) AS phone_number
+      ) AS main_address
     )
-  FROM `logee-data-prod.L1_visibility.lgd_companies`
+  FROM `logee-data-prod.L1_visibility.lgd_store`
   WHERE
     modified_at BETWEEN '{{ execution_date }}' AND '{{ next_execution_date }}'
 )
 
+-- ,check AS (
 
-,check AS (
+--   SELECT
+--     store_id,
+--     published_timestamp,
 
-  SELECT
-    company_id,
-    published_timestamp,
+--     STRUCT(
+--       'store_id' AS column,
+--       IF(store_id IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
+--     ) AS quality_check
+--   FROM base
+--   WHERE store_id IS NULL or store_id = ''
 
-    STRUCT(
-      'company_id' AS column,
-      IF(company_id IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
-    ) AS quality_check
-  FROM base
-  WHERE company_id IS NULL or company_id = ''
+--   UNION ALL
 
-  UNION ALL
+--   SELECT
+--     store_id,
+--     published_timestamp,
 
-  SELECT
-    company_id,
-    published_timestamp,
+--     STRUCT(
+--       'owner_address_address' AS column,
+--       IF(store_owner.owner_address.address IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
+--     ) AS quality_check
+--   FROM base
+--   WHERE store_owner.owner_address.address IS NULL or store_owner.owner_address.address = ''
 
-    STRUCT(
-      'company_name' AS column,
-      IF(company_name IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
-    ) AS quality_check
- FROM base
-  WHERE company_name IS NULL or company_name = ''
+--   UNION ALL
 
-  UNION ALL
+--   SELECT
+--     store_id,
+--     published_timestamp,
 
-  SELECT
-    company_id,
-    published_timestamp,
+--     STRUCT(
+--       'owner_address_lat' AS column,
+--       IF(store_owner.owner_address.lat IS NULL, 'Column can not be NULL', 'Column can not be equal to zero') AS quality_notes
+--     ) AS quality_check
+--   FROM base
+--   WHERE store_owner.owner_address.lat IS NULL or store_owner.owner_address.lat = 0
 
-    STRUCT(
-      'company_phone_number' AS column,
-      IF(company_phone_number IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
-    ) AS quality_check
-  FROM base
-  WHERE company_phone_number IS NULL or company_phone_number = ''
+--   UNION ALL
 
-  UNION ALL
+--   SELECT
+--     store_id,
+--     published_timestamp,
 
-  SELECT
-    company_id,
-    published_timestamp,
+--     STRUCT(
+--       'owner_address_long' AS column,
+--       IF(store_owner.owner_address.long IS NULL, 'Column can not be NULL', 'Column can not be equal to zero') AS quality_notes
+--     ) AS quality_check
+--   FROM base
+--   WHERE store_owner.owner_address.long IS NULL or store_owner.owner_address.long = 0
 
-    STRUCT(
-      'company_address' AS column,
-      IF(company_address IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
-    ) AS quality_check
-  FROM base
-  WHERE company_address IS NULL or company_address = ''
+--   UNION ALL
 
-  UNION ALL
+--   SELECT
+--     store_id,
+--     published_timestamp,
 
-  SELECT
-    company_id,
-    published_timestamp,
+--     STRUCT(
+--       'owner_address_province_id' AS column,
+--       IF(store_owner.owner_address.province_id IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
+--     ) AS quality_check
+--  FROM base
+--   WHERE store_owner.owner_address.province_id IS NULL or store_owner.owner_address.province_id = ''
 
-    STRUCT(
-      'company_category' AS column,
-      IF(company_category IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
-    ) AS quality_check
- FROM base
-  WHERE company_category IS NULL or company_category = ''
+--   UNION ALL
 
-  UNION ALL
+--   SELECT
+--     store_id,
+--     published_timestamp,
 
-  SELECT
-    company_id,
-    published_timestamp,
+--     STRUCT(
+--       'owner_address_province' AS column,
+--       IF(store_owner.owner_address.province IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
+--     ) AS quality_check
+--   FROM base
+--   WHERE store_owner.owner_address.province IS NULL or store_owner.owner_address.province = ''
 
-    STRUCT(
-      'company_status' AS column,
-      IF(company_status IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
-    ) AS quality_check
-  FROM base
-  WHERE company_status IS NULL or company_status = ''
+--   UNION ALL
 
-  UNION ALL
+--   SELECT
+--     store_id,
+--     published_timestamp,
 
-  SELECT
-    company_id,
-    published_timestamp,
+--     STRUCT(
+--       'owner_address_city_id' AS column,
+--       IF(store_owner.owner_address.city_id IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
+--     ) AS quality_check
+--  FROM base
+--   WHERE store_owner.owner_address.city_id IS NULL or store_owner.owner_address.city_id = ''
 
-    STRUCT(
-      'company_image' AS column,
-      IF(company_image IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
-    ) AS quality_check
- FROM base
-  WHERE company_image IS NULL or company_image = ''
+--   UNION ALL
 
-  UNION ALL
+--   SELECT
+--     store_id,
+--     published_timestamp,
 
-  SELECT
-    company_id,
-    published_timestamp,
+--     STRUCT(
+--       'owner_address_city' AS column,
+--       IF(store_owner.owner_address.city IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
+--     ) AS quality_check
+--   FROM base
+--   WHERE store_owner.owner_address.city IS NULL or store_owner.owner_address.city = ''
 
-    STRUCT(
-      'user_id' AS column,
-      IF(user_id IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
-    ) AS quality_check
-  FROM base
-  WHERE user_id IS NULL or user_id = ''
+--   UNION ALL
 
-  UNION ALL
+--   SELECT
+--     store_id,
+--     published_timestamp,
 
-  SELECT
-    company_id,
-    published_timestamp,
+--     STRUCT(
+--       'owner_address_district_id' AS column,
+--       IF(store_owner.owner_address.district_id IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
+--     ) AS quality_check
+--  FROM base
+--   WHERE store_owner.owner_address.district_id IS NULL or store_owner.owner_address.district_id = ''
 
-    STRUCT(
-      'user_type' AS column,
-      IF(user_type IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
-    ) AS quality_check
- FROM base
-  WHERE user_type IS NULL or user_type = ''
+--   UNION ALL
 
-  UNION ALL
+--   SELECT
+--     store_id,
+--     published_timestamp,
 
-  SELECT
-    company_id,
-    published_timestamp,
+--     STRUCT(
+--       'owner_address_district' AS column,
+--       IF(store_owner.owner_address.district IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
+--     ) AS quality_check
+--   FROM base
+--   WHERE store_owner.owner_address.district IS NULL or store_owner.owner_address.district = ''
 
-    STRUCT(
-      'bank_account_bank_name' AS column,
-      IF(bank_account.bank_name IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
-    ) AS quality_check
-  FROM base
-  WHERE bank_account.bank_name IS NULL or bank_account.bank_name = ''
+--   UNION ALL
 
-  UNION ALL
+--   SELECT
+--     store_id,
+--     published_timestamp,
 
-  SELECT
-    company_id,
-    published_timestamp,
+--     STRUCT(
+--       'owner_address_sub_district_id' AS column,
+--       IF(store_owner.owner_address.sub_district_id IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
+--     ) AS quality_check
+--   FROM base
+--   WHERE store_owner.owner_address.sub_district_id IS NULL or store_owner.owner_address.sub_district_id = ''
 
-    STRUCT(
-      'bank_account_account_name' AS column,
-      IF(bank_account.account_name IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
-    ) AS quality_check
-  FROM base
-  WHERE bank_account.account_name IS NULL or bank_account.account_name = ''
+--   UNION ALL
 
-  UNION ALL
+--   SELECT
+--     store_id,
+--     published_timestamp,
 
-  SELECT
-    company_id,
-    published_timestamp,
+--     STRUCT(
+--       'owner_address_sub_district' AS column,
+--       IF(store_owner.owner_address.sub_district IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
+--     ) AS quality_check
+--   FROM base
+--   WHERE store_owner.owner_address.sub_district IS NULL or store_owner.owner_address.sub_district = ''
 
-    STRUCT(
-      'bank_account_account_number' AS column,
-      IF(bank_account.account_number IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
-    ) AS quality_check
-  FROM base
-  WHERE bank_account.account_number IS NULL or bank_account.account_number = ''
+--   UNION ALL
 
-  UNION ALL
+--   SELECT
+--     store_id,
+--     published_timestamp,
 
-  SELECT
-    company_id,
-    published_timestamp,
+--     STRUCT(
+--       'owner_address_zip_code_id' AS column,
+--       IF(store_owner.owner_address.zip_code_id IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
+--     ) AS quality_check
+--   FROM base
+--   WHERE store_owner.owner_address.zip_code_id IS NULL or store_owner.owner_address.zip_code_id = ''
 
-    STRUCT(
-      'purchase_order_is_active' AS column,
-      IF(settings.purchase_order.is_active IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
-    ) AS quality_check
-  FROM base
-  WHERE settings.purchase_order.is_active IS NULL 
+--   UNION ALL
 
-  UNION ALL
+--   SELECT
+--     store_id,
+--     published_timestamp,
 
-  SELECT
-    company_id,
-    published_timestamp,
+--     STRUCT(
+--       'owner_address_zip_code' AS column,
+--       IF(store_owner.owner_address.zip_code IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
+--     ) AS quality_check
+--   FROM base
+--   WHERE store_owner.owner_address.zip_code IS NULL or store_owner.owner_address.zip_code = ''
 
-    STRUCT(
-      'purchase_order.allow_changes' AS column,
-      IF(settings.purchase_order.allow_changes IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
-    ) AS quality_check
-  FROM base
-  WHERE settings.purchase_order.allow_changes IS NULL 
+--   UNION ALL
 
-  UNION ALL
+--   SELECT
+--     store_id,
+--     published_timestamp,
 
-  SELECT
-    company_id,
-    published_timestamp,
+--     STRUCT(
+--       'owner_address_address_mark' AS column,
+--       IF(store_owner.owner_address.address_mark IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
+--     ) AS quality_check
+--   FROM base
+--   WHERE store_owner.owner_address.address_mark IS NULL or store_owner.owner_address.address_mark = ''
 
-    STRUCT(
-      'sales_order_is_active' AS column,
-      IF(settings.sales_order.is_active IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
-    ) AS quality_check
-  FROM base
-  WHERE settings.sales_order.is_active IS NULL 
+--   UNION ALL
 
-  UNION ALL
+--    SELECT
+--     store_id,
+--     published_timestamp,
 
-   SELECT
-    company_id,
-    published_timestamp,
+--     STRUCT(
+--       'owner_name' AS column,
+--       IF(store_owner.owner_name IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
+--     ) AS quality_check
+--   FROM base
+--   WHERE store_owner.owner_name IS NULL or store_owner.owner_name = ''
 
-    STRUCT(
-      'invoice_is_active' AS column,
-      IF(settings.invoice.is_active IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
-    ) AS quality_check
-  FROM base
-  WHERE settings.invoice.is_active IS NULL 
+--   UNION ALL
 
-  UNION ALL
+--   SELECT
+--     store_id,
+--     published_timestamp,
 
-  SELECT
-    company_id,
-    published_timestamp,
+--     STRUCT(
+--       'owner_phone_number' AS column,
+--       IF(store_owner.owner_phone_number IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
+--     ) AS quality_check
+--   FROM base
+--   WHERE store_owner.owner_phone_number IS NULL or store_owner.owner_phone_number = ''
 
-    STRUCT(
-      'invoice_approver_name' AS column,
-      IF(settings.invoice.approver_name IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
-    ) AS quality_check
-  FROM base
-  WHERE settings.invoice.approver_name IS NULL or settings.invoice.approver_name = ''
+--   UNION ALL
 
-  UNION ALL
+--   SELECT
+--     store_id,
+--     published_timestamp,
 
-  SELECT
-    company_id,
-    published_timestamp,
-
-    STRUCT(
-      'invoice_approver_position' AS column,
-      IF(settings.invoice.approver_position IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
-    ) AS quality_check
-  FROM base
-  WHERE settings.invoice.approver_position IS NULL or settings.invoice.approver_position = ''
+--     STRUCT(
+--       'user_type' AS column,
+--       IF(user_type IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
+--     ) AS quality_check
+--   FROM base
+--   WHERE user_type IS NULL or user_type = ''
   
-  UNION ALL
+--   UNION ALL
 
-  SELECT
-    company_id,
-    published_timestamp,
+--   SELECT
+--     store_id,
+--     published_timestamp,
 
-    STRUCT(
-      'purchase_on_delivery_is_active' AS column,
-      IF(settings.purchase_on_delivery.is_active IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
-    ) AS quality_check
-  FROM base
-  WHERE settings.purchase_on_delivery.is_active IS NULL 
+--     STRUCT(
+--       'company_id' AS column,
+--       IF(company_id IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
+--     ) AS quality_check
+--   FROM base
+--   WHERE company_id IS NULL or company_id = ''
 
-  UNION ALL
+--   UNION ALL
 
-  SELECT
-    company_id,
-    published_timestamp,
+--   SELECT
+--     store_id,
+--     published_timestamp,
 
-    STRUCT(
-      'purchase_on_delivery_approver_name' AS column,
-      IF(settings.purchase_on_delivery.approver_name IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
-    ) AS quality_check
-  FROM base
-  WHERE settings.purchase_on_delivery.approver_name IS NULL or settings.purchase_on_delivery.approver_name = ''
+--     STRUCT(
+--       'username' AS column,
+--       IF(username IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
+--     ) AS quality_check
+--   FROM base
+--   WHERE username IS NULL or username = ''
 
-  UNION ALL
+--   UNION ALL
 
-  SELECT
-    company_id,
-    published_timestamp,
+--   SELECT
+--     store_id,
+--     published_timestamp,
 
-    STRUCT(
-      'purchase_on_delivery_approver_position' AS column,
-      IF(settings.purchase_on_delivery.approver_position IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
-    ) AS quality_check
-  FROM base
-  WHERE settings.purchase_on_delivery.approver_position IS NULL or settings.purchase_on_delivery.approver_position = ''
+--     STRUCT(
+--       'external_id' AS column,
+--       IF(external_id IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
+--     ) AS quality_check
+--   FROM base
+--   WHERE external_id IS NULL or external_id = ''
 
-  UNION ALL
+--   UNION ALL
 
-  SELECT
-    company_id,
-    published_timestamp,
+--   SELECT
+--     store_id,
+--     published_timestamp,
 
-    STRUCT(
-      'services_order' AS column,
-      IF(settings.services.order IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
-    ) AS quality_check
-  FROM base
-  WHERE settings.services.order IS NULL or settings.services.order = ''
+--     STRUCT(
+--       'sub_area_id' AS column,
+--       IF(sub_area_id IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
+--     ) AS quality_check
+--   FROM base
+--   WHERE sub_area_id IS NULL or sub_area_id = ''
 
-  UNION ALL
+--   UNION ALL
 
-  SELECT
-    company_id,
-    published_timestamp,
+--   SELECT
+--     store_id,
+--     published_timestamp,
 
-    STRUCT(
-      'services_sales' AS column,
-      IF(settings.services.sales IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
-    ) AS quality_check
-  FROM base
-  WHERE settings.services.sales IS NULL or settings.services.sales = ''
+--     STRUCT(
+--       'sales_id' AS column,
+--       IF(sales_id IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
+--     ) AS quality_check
+--   FROM base
+--   WHERE sales_id IS NULL or sales_id = ''
 
-  UNION ALL
+--   UNION ALL
 
-  SELECT
-    company_id,
-    published_timestamp,
+--   SELECT
+--     store_id,
+--     published_timestamp,
 
-    STRUCT(
-      'feature_is_otp' AS column,
-      IF(settings.feature.is_otp IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
-    ) AS quality_check
-  FROM base
-  WHERE settings.feature.is_otp IS NULL 
+--     STRUCT(
+--       'main_address_id' AS column,
+--       IF(main_address_id IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
+--     ) AS quality_check
+--   FROM base
+--   WHERE main_address_id IS NULL 
 
-  UNION ALL
+--   UNION ALL
 
-  SELECT
-    company_id,
-    published_timestamp,
+--   SELECT
+--     store_id,
+--     published_timestamp,
 
-    STRUCT(
-      'fulfillment_type' AS column,
-      IF(settings.fulfillment_type IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
-    ) AS quality_check
-  FROM base
-  WHERE settings.fulfillment_type IS NULL or settings.fulfillment_type = ''
+--     STRUCT(
+--       'main_address_address' AS column,
+--       IF(main_address.address IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
+--     ) AS quality_check
+--   FROM base
+--   WHERE main_address.address IS NULL or main_address.address = ''
 
-  UNION ALL
+--   UNION ALL
 
-  SELECT
-    company_id,
-    published_timestamp,
+--   SELECT
+--     store_id,
+--     published_timestamp,
 
-    STRUCT(
-      'is_default_area_sub_area' AS column,
-      IF(settings.is_default_area_sub_area IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
-    ) AS quality_check
-  FROM base
-  WHERE settings.is_default_area_sub_area IS NULL
+--     STRUCT(
+--       'main_address_city' AS column,
+--       IF(main_address.city IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
+--     ) AS quality_check
+--   FROM base
+--   WHERE main_address.city IS NULL or main_address.city = ''
 
-  UNION ALL
+--   UNION ALL
 
-  SELECT
-    company_id,
-    published_timestamp,
-    STRUCT(
-      'is_active' AS column,
-      IF(is_active IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
-    ) AS quality_check
-  FROM base
-  WHERE is_active IS NULL
+--   SELECT
+--     store_id,
+--     published_timestamp,
 
-  UNION ALL
+--     STRUCT(
+--       'main_address_city_id' AS column,
+--       IF(main_address.city_id IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
+--     ) AS quality_check
+--   FROM base
+--   WHERE main_address.city_id IS NULL or main_address.city_id = ''
 
- SELECT
-    company_id,
-    published_timestamp,
-    STRUCT(
-      'company_group_id' AS column,
-      IF(company_group_id IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
-    ) AS quality_check
-  FROM base
-  WHERE company_group_id IS NULL or company_group_id = ''
+--   UNION ALL
 
-)
+--   SELECT
+--     store_id,
+--     published_timestamp,
+--     STRUCT(
+--       'main_address_district' AS column,
+--       IF(main_address.district IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
+--     ) AS quality_check
+--   FROM base
+--   WHERE main_address.district IS NULL or main_address.district = ''
 
-,aggregated_check AS (
-  SELECT 
-    company_id,
-    published_timestamp,
-    ARRAY_AGG(
-      quality_check
-    ) AS quality_check
-  FROM check
-  GROUP BY 1, 2
-)
+--   UNION ALL
+
+--  SELECT
+--     store_id,
+--     published_timestamp,
+--     STRUCT(
+--       'main_address_district_id' AS column,
+--       IF(main_address.district_id IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
+--     ) AS quality_check
+--   FROM base
+--   WHERE main_address.district_id IS NULL or main_address.district_id = ''
+
+--   UNION ALL
+
+--   SELECT
+--     store_id,
+--     published_timestamp,
+
+--     STRUCT(
+--       'main_address_lat' AS column,
+--       IF(main_address.lat IS NULL, 'Column can not be NULL', 'Column can not be equal to zero') AS quality_notes
+--     ) AS quality_check
+--   FROM base
+--   WHERE main_address.lat IS NULL or main_address.lat = 0
+
+--   UNION ALL
+
+--   SELECT
+--     store_id,
+--     published_timestamp,
+
+--     STRUCT(
+--       'main_address_long' AS column,
+--       IF(main_address.long IS NULL, 'Column can not be NULL', 'Column can not be equal to zero') AS quality_notes
+--     ) AS quality_check
+--   FROM base
+--   WHERE main_address.long IS NULL or main_address.long = 0
+
+--  UNION ALL
+
+--   SELECT
+--     store_id,
+--     published_timestamp,
+
+--     STRUCT(
+--       'main_address_phone_number' AS column,
+--       IF(main_address.phone_number IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
+--     ) AS quality_check
+--   FROM base
+--   WHERE main_address.phone_number IS NULL or main_address.phone_number = ''
+
+--   UNION ALL
+
+--   SELECT
+--     store_id,
+--     published_timestamp,
+
+--     STRUCT(
+--       'main_address_province' AS column,
+--       IF(main_address.province IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
+--     ) AS quality_check
+--   FROM base
+--   WHERE main_address.province IS NULL or main_address.province = ''
+
+--   UNION ALL
+
+--   SELECT
+--     store_id,
+--     published_timestamp,
+
+--     STRUCT(
+--       'main_address_province_id' AS column,
+--       IF(main_address.province_id IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
+--     ) AS quality_check
+--   FROM base
+--   WHERE main_address.province_id IS NULL or main_address.province_id = ''
+
+--   UNION ALL
+
+--   SELECT
+--     store_id,
+--     published_timestamp,
+
+--     STRUCT(
+--       'main_address_store_name' AS column,
+--       IF(main_address.store_name IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
+--     ) AS quality_check
+--   FROM base
+--   WHERE main_address.store_name IS NULL or main_address.store_name = ''
+
+--   UNION ALL
+
+--   SELECT
+--     store_id,
+--     published_timestamp,
+--     STRUCT(
+--       'main_address_sub_district' AS column,
+--       IF(main_address.sub_district IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
+--     ) AS quality_check
+--   FROM base
+--   WHERE main_address.sub_district IS NULL or main_address.sub_district = ''
+
+--   UNION ALL
+
+--  SELECT
+--     store_id,
+--     published_timestamp,
+--     STRUCT(
+--       'main_address_sub_district_id' AS column,
+--       IF(main_address.sub_district_id IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
+--     ) AS quality_check
+--   FROM base
+--   WHERE main_address.sub_district_id is NULL or main_address.sub_district_id = ''
+
+
+-- UNION ALL
+
+--   SELECT
+--     store_id,
+--     published_timestamp,
+--     STRUCT(
+--       'main_address_zip_code' AS column,
+--       IF(main_address.zip_code IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
+--     ) AS quality_check
+--   FROM base
+--   WHERE main_address.zip_code IS NULL or main_address.zip_code = ''
+
+--   UNION ALL
+
+--  SELECT
+--     store_id,
+--     published_timestamp,
+--     STRUCT(
+--       'main_address_zip_code_id' AS column,
+--       IF(main_address.zip_code_id IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
+--     ) AS quality_check
+--   FROM base
+--   WHERE main_address.zip_code_id is NULL or main_address.zip_code_id = ''
+
+--    UNION ALL
+
+--  SELECT
+--     store_id,
+--     published_timestamp,
+--     STRUCT(
+--       'main_address_external_id' AS column,
+--       IF(main_address.external_id IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
+--     ) AS quality_check
+--   FROM base
+--   WHERE main_address.external_id is NULL or main_address.external_id = ''
+
+-- UNION ALL
+--   SELECT
+--     store_id,
+--     published_timestamp,
+--     STRUCT(
+--       'main_address_recipient_name' AS column,
+--       IF(main_address.recipient_name IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
+--     ) AS quality_check
+--   FROM base
+--   WHERE main_address.recipient_name is NULL or main_address.recipient_name = ''
+
+--   UNION ALL
+--   SELECT
+--     store_id,
+--     published_timestamp,
+--     STRUCT(
+--       'main_address' AS column,
+--       IF(main_address.main_address IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
+--     ) AS quality_check
+--   FROM base
+--   WHERE main_address.main_address is NULL 
+
+--   UNION ALL
+
+--  SELECT
+--     store_id,
+--     published_timestamp,
+--     STRUCT(
+--       'main_address_address_mark' AS column,
+--       IF(main_address.address_mark IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
+--     ) AS quality_check
+--   FROM base
+--   WHERE main_address.address_mark is NULL or main_address.address_mark = ''
+
+-- UNION ALL
+--   SELECT
+--     store_id,
+--     published_timestamp,
+--     STRUCT(
+--       'main_address_is_fulfillment_process' AS column,
+--       IF(main_address.is_fulfillment_process IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
+--     ) AS quality_check
+--   FROM base
+--   WHERE main_address.is_fulfillment_process is NULL
+
+-- UNION ALL
+
+--   SELECT
+--     store_id,
+--     published_timestamp,
+--     STRUCT(
+--       'status' AS column,
+--       IF(status IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
+--     ) AS quality_check
+--   FROM base
+--   WHERE status IS NULL or status = ''
+
+--   UNION ALL
+
+--  SELECT
+--     store_id,
+--     published_timestamp,
+--     STRUCT(
+--       'assigned_task_id' AS column,
+--       IF(assigned_task_id IS NULL, 'Column can not be NULL', 'Column can not be an empty string') AS quality_notes
+--     ) AS quality_check
+--   FROM base
+--   WHERE assigned_task_id is NULL or assigned_task_id = ''
+-- )
+
+-- ,aggregated_check AS (
+--   SELECT 
+--     store_id,
+--     published_timestamp,
+--     ARRAY_AGG(
+--       quality_check
+--     ) AS quality_check
+--   FROM check
+--   GROUP BY 1, 2
+-- )
 
 SELECT
-  A.*,
-  B.quality_check
+  * 
+  EXCEPT (list_Address)
+  -- ,
+  -- B.quality_check
 FROM 
-  base A
-  LEFT JOIN aggregated_check B
-  ON A.company_id = B.company_id
-  AND A.published_timestamp = B.published_timestamp
+  base
+  -- LEFT JOIN aggregated_check B
+  -- ON A.store_id = B.store_id
+  -- AND A.published_timestamp = B.published_timestamp
+
