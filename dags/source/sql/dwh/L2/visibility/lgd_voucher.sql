@@ -115,7 +115,7 @@ WITH base AS (
 -- )
 
 SELECT 
-A. *,
+A.*
 -- B.quality_check
 FROM base A
 --   LEFT JOIN aggregated_check B
