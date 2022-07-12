@@ -100,24 +100,24 @@ WITH base AS (
   FROM base
   WHERE voucher_status IS NULL or voucher_status = ''
   
-)
+-- )
 
 
-,aggregated_check AS (
-  SELECT 
-    voucher_id,
-    published_timestamp,
-    ARRAY_AGG(
-      quality_check
-    ) AS quality_check
-  FROM check
-  GROUP BY 1, 2
-)
+-- ,aggregated_check AS (
+--   SELECT 
+--     voucher_id,
+--     published_timestamp,
+--     ARRAY_AGG(
+--       quality_check
+--     ) AS quality_check
+--   FROM check
+--   GROUP BY 1, 2
+-- )
 
 SELECT 
 A. *,
-B.quality_check
+-- B.quality_check
 FROM base A
-  LEFT JOIN aggregated_check B
-  ON A.voucher_id = B.voucher_id
-  AND A.published_timestamp = B.published_timestamp
+--   LEFT JOIN aggregated_check B
+--   ON A.voucher_id = B.voucher_id
+--   AND A.published_timestamp = B.published_timestamp
