@@ -4,12 +4,11 @@ WITH base AS (
   FROM 
     `logee-data-prod.L1_visibility.lgd_product`
   WHERE
-    modified_at BETWEEN '{{ execution_date }}' AND '{{ next_execution_date }}'
+    published_timestamp BETWEEN '{{ execution_date }}' AND '{{ next_execution_date }}'
 )
 
 
 -- CHECK 
-
 -- , check AS (
 
 --   SELECT
