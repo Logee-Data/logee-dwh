@@ -59,7 +59,8 @@ cataloger_run_local:
 	-v $(shell pwd):/workspace:ro \
 	--entrypoint /usr/local/bin/python \
 	$(cataloger_docker_image):$(cataloger_docker_tag) \
-	/workspace/scripts/data_cataloger/data_cataloger/cataloger.py
+	/workspace/scripts/data_cataloger/data_cataloger/cataloger.py \
+	
 
 # for debugging, trial & error
 cataloger_shell:
