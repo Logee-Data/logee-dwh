@@ -84,6 +84,7 @@ SELECT
   REPLACE(JSON_EXTRACT(A.data, '$.paymentTypeImage'), '"', '') AS payment_type_image,
   REPLACE(JSON_EXTRACT(A.data, '$.paymentTypeName'), '"', '') AS payment_type_name,
   CAST(REPLACE(JSON_EXTRACT(A.data, '$.pickUpTime'), '"', '') AS TIMESTAMP) AS pick_up_time,
+  IF(REPLACE(JSON_EXTRACT(A.data, '$.pricingId'), '"', '') = "", NULL, JSON_EXTRACT(A.data, '$.pricingId')) AS pricing_id,
   CAST(IF(JSON_EXTRACT_SCALAR(A.data, '$.taxAmount') = "", NULL, JSON_EXTRACT_SCALAR(A.data, '$.taxAmount')) AS FLOAT64) AS tax_amount,
   CAST(IF(JSON_EXTRACT_SCALAR(A.data, '$.totalAmount') = "", NULL, JSON_EXTRACT_SCALAR(A.data, '$.totalAmount')) AS FLOAT64) AS total_amount,
   CAST(IF(JSON_EXTRACT_SCALAR(A.data, '$.tripFeeAmount') = "", NULL, JSON_EXTRACT_SCALAR(A.data, '$.tripFeeAmount')) AS FLOAT64) AS trip_fee_amount,
