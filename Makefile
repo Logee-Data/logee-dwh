@@ -1,6 +1,7 @@
 cataloger_docker_image ?= asia.gcr.io/logee-data-cicd/logee-dwh/data_cataloger/general
 cataloger_docker_tag ?= 1.0.0
-deployment ?= simulation
+env ?= logee-data-dev
+dryrun ?= true
 linux_user_name = $(shell whoami)
 linux_user_uid = $(shell id -u $(linux_user_name))
 linux_user_gid = $(shell id -g $(linux_user_name))
@@ -54,20 +55,23 @@ cataloger_run_local:
 	docker run -it --rm \
 	--network host \
 	--user $(linux_user_uid):$(linux_user_gid) \
-	-e GOOGLE_APPLICATION_CREDENTIALS=/workspace/service_account.$(deployment).json \
+	-e GOOGLE_APPLICATION_CREDENTIALS=/workspace/scripts/data_cataloger/credentials/service_account.$(env).json \
 	-v /tmp:/tmp \
 	-v $(shell pwd):/workspace:ro \
 	--entrypoint /usr/local/bin/python \
 	$(cataloger_docker_image):$(cataloger_docker_tag) \
 	/workspace/scripts/data_cataloger/data_cataloger/cataloger.py \
-	
+	sync-data-catalog \
+	--parameters_path=/workspace/scripts/data_cataloger/parameters/parameters.$(env).yaml \
+	--service_account_path=/workspace/scripts/data_cataloger/credentials/service_account.$(env).json \
+	--dryrun=$(dryrun)
 
 # for debugging, trial & error
 cataloger_shell:
 	docker run -it --rm \
 	--network host \
 	--user $(linux_user_uid):$(linux_user_gid) \
-	-e GOOGLE_APPLICATION_CREDENTIALS=/workspace/service_account.$(deployment).json \
+	-e GOOGLE_APPLICATION_CREDENTIALS=/workspace/scripts/data_cataloger/credentials/service_account.$(env).json \
 	-v /tmp:/tmp \
 	-v $(shell pwd):/workspace:ro \
 	--entrypoint bash \

@@ -1,7 +1,12 @@
+from typing import Dict, List
+from google.cloud import bigquery
+from google.cloud.bigquery.schema import SchemaField
+from google.cloud.bigquery.client import Client as BigQueryClient
+
 import os
 import json
 import yaml
-from typing import Dict, List
+import click
 
 class Table:
     def __init__(
@@ -9,27 +14,29 @@ class Table:
     ):
         pass
 
-def main(
-    env: str,
+def do_sync_data_catalog(
+    parameters_path: str,
+    service_account_path: str,
     dryrun: bool,
 ):
     this_script_dir: str = \
         os.path.dirname(os.path.realpath(__file__))
 
-    parameters_folder: str = os.path.join(
-        os.path.dirname(
-            this_script_dir
-        ),
-        'parameters',
-    )
+    # parameters_folder: str = os.path.join(
+    #     os.path.dirname(
+    #         this_script_dir
+    #     ),
+    #     'parameters',
+    # )
     parameters: dict = read_yaml(
-        file_path=os.path.join(
-            parameters_folder,
-            f"parameters.{env}.yaml",
-        ),
+        file_path=parameters_path,
     )
     print(f"parameters: {parameters}")
     allow_schema_null_or_undefined: bool = parameters['allow_schema_null_or_undefined']
+    bigquery_data_project: str = parameters['bigquery_data_project']
+    bigquery_table_address_format: str = parameters['bigquery_table_address_format']
+    bigquery_job_project: str = parameters['bigquery_job_project']
+    bigquery_job_location: str = parameters['bigquery_job_location']
 
     root_folder: str = os.path.dirname(
         os.path.dirname(
@@ -101,29 +108,108 @@ def main(
     if found_local_invalid_schema:
         raise Exception("invalid schema exist. please review the log above")
 
-    # TODO: derive schema and inheritance
+    # derive schema and inheritance
     table_representation_result: dict = represent_tables(
         floor_folders=floor_folders,
     )
 
     # TODO: push metadata to bigquery
+    tables_by_id: dict = table_representation_result['tables_by_id']
+    print('debug2 tables_by_id', tables_by_id)
+    sync_bigquery_tables_metadata(
+        tables_by_id=tables_by_id,
+        bigquery_data_project=bigquery_data_project,
+        bigquery_table_address_format=bigquery_table_address_format,
+        bigquery_job_project=bigquery_job_project,
+        bigquery_job_location=bigquery_job_location,
+    )
+
+def sync_bigquery_tables_metadata(
+    tables_by_id: dict,
+    bigquery_data_project: str,
+    bigquery_table_address_format: str,
+    bigquery_job_project: str,
+    bigquery_job_location: str,
+):
+    """
+    Ref: https://cloud.google.com/bigquery/docs/samples/bigquery-get-table#bigquery_get_table-python
+    """
+    # Construct a BigQuery client object.
+    bigquery_client: BigQueryClient = bigquery.Client()
+    for table_name, table in tables_by_id.items():
+        table: Table
+        bigquery_table_address: str = table.construct_bigquery_table_address(
+            bigquery_table_address_format=bigquery_table_address_format,
+            bigquery_data_project=bigquery_data_project,
+        )
+        print('bigquery_table_address', bigquery_table_address)
+
+def get_existing_table_schema(
+    table_id: str,
+    bigquery_client: BigQueryClient,
+):
+    table_id = 'logee-data-dev.tmp.l1_orders'
+
+    table = bigquery_client.get_table(table_id)  # Make an API request.
+
+    # View table properties
+    # print('type(table)', type(table))
+    # print(
+    #     "Got table '{}.{}.{}'.".format(table.project, table.dataset_id, table.table_id)
+    # )
+    # print("Table schema: {}".format(table.schema))
+    # print("Table description: {}".format(table.description))
+    # print("Table has {} rows".format(table.num_rows))
+
+    table_schema: List[SchemaField] = table.schema
+
+    update_table_column_description(
+        bigquery_client=bigquery_client,
+        bigquery_job_project=bigquery_job_project,
+        bigquery_job_location=bigquery_job_location,
+    )
+
+def update_table_column_description(
+    bigquery_client,
+    bigquery_job_project: str,
+    bigquery_job_location: str,
+):
+    alter_col_desc_query: str = (
+        "ALTER TABLE `logee-data-dev.tmp.l1_orders`"
+        "ALTER COLUMN op_masked \n"
+        "SET OPTIONS (\n"
+        "description=\"the description of op which is masked v2\"\n"
+        ");"
+    )
+    print(f"running query: {alter_col_desc_query}")
+    query_job = bigquery_client.query(
+        query=alter_col_desc_query,
+        project=bigquery_job_project,
+        location=bigquery_job_location,
+    )
+    _ = query_job.result()
 
 class Table:
     def __init__(
         self,
         table_id: str,
+        floor: str,
+        subfloor: str,
         name: str,
         columns_defined_list: dict,
         inheritances_info: List[Dict] = [],
     ):
         self.table_id = table_id
-        self.name = name
+        self.floor = floor # ex: L1
+        self.subfloor = subfloor # ex: visibility
+        self.name = name # ex: dma_logee_user
 
         self.columns_defined: Dict[Dict] = dict()
         for column in columns_defined_list:
             self.columns_defined[column['name']] = column
 
         self.inheritances_info = inheritances_info
+        self.columns_inherited: Dict[Dict] = None
         self.is_inheritances_determined: bool = False
 
     def determine_inheritance(self, tables_by_id: dict):
@@ -133,8 +219,6 @@ class Table:
             inheritance_table_id: str = inheritance_info['table']
             inheritance_input_columns: list = inheritance_info['columns']
             if full_copy: # will inherit all columns from parent. columns key from config will be ignored
-                # TODO
-                # print(f"debug2 {self.table_id} full_copy")
                 referred_inheritance_table: Table = tables_by_id[inheritance_table_id]
                 for referred_column_name, referred_column in referred_inheritance_table.columns_defined.items():
                     referred_column_description: str = referred_column['description']
@@ -176,6 +260,19 @@ class Table:
     #     return f"{self.table_id} | is_inheritances_determined = {self.is_inheritances_determined} | cols def = {self.columns_defined} | cols inh = {self.columns_inherited}"
         # | parents = {','.join([info.table_id for info in self.inheritances_info])}
 
+    def construct_bigquery_table_address(
+        self,
+        bigquery_table_address_format: str,
+        bigquery_data_project: str,
+    ) -> str:
+        bigquery_table_address: str = bigquery_table_address_format.format(
+            project=bigquery_data_project,
+            floor=self.floor,
+            subfloor=self.subfloor,
+            name=self.name,
+        )
+        return bigquery_table_address
+
 def represent_tables(
     floor_folders: list,
 ) -> dict:
@@ -191,6 +288,8 @@ def represent_tables(
                 if ('schema' in config_file['config']) and (config_file['config']['schema'] != None):
                     table: Table = Table(
                         table_id=table_id,
+                        floor=floor_folder['floor_folder_name'],
+                        subfloor=subfloor_folder['subfloor_folder_name'],
                         name=config_file['table_name'],
                         columns_defined_list=config_file['config']['schema']['columns'],
                     )
@@ -212,18 +311,17 @@ def represent_tables(
                         else:
                             tables_by_id[table_id].inheritances_info = inheritances_info
 
-
-    print('tables_by_id.keys()', tables_by_id.keys())
-
-    for table_id, table in tables_by_id.items():
-        print(table_id, table)
-
     while not all_tables_inheritance_determined(tables_by_id=tables_by_id):
         for table_id, table in tables_by_id.items():
             if table.is_ready_to_determine_inheritance(tables_by_id=tables_by_id):
                 table.determine_inheritance(
                     tables_by_id=tables_by_id,
                 )
+
+    # TODO: remove debug
+    print('tables_by_id.keys()', tables_by_id.keys())
+    for table_id, table in tables_by_id.items():
+        print(f"{table_id} | columns_defined = {table.columns_defined} | columns_inherited = {table.columns_inherited}")
 
     return dict(
         tables_by_id=tables_by_id,
@@ -366,5 +464,23 @@ def validate_local_schema(
         invalid_reasons=invalid_reasons,
     )
 
-if __name__ == '__main__':
-    main(env='development', dryrun=True) # TODO: click parameterize
+@click.group()
+def cli():
+    pass
+
+@cli.command()
+@click.option('--parameters_path', type=str, required=True, help='absolute path to config yaml file')
+@click.option('--service_account_path', type=str, required=True, help='absolute path to GCP service account json file')
+@click.option('--dryrun', type=bool, required=True, help='whether to dry run (run without executing)')
+def sync_data_catalog(
+    parameters_path: str,
+    service_account_path: str,
+    dryrun: bool,
+):
+    do_sync_data_catalog(
+        parameters_path=parameters_path,
+        service_account_path=service_account_path,
+        dryrun=dryrun,
+    )
+
+if __name__ == '__main__': cli()

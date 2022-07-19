@@ -131,3 +131,9 @@ dmypy.json
 # IDE related files
 .idea
 .DS_Store
+
+# data cataloger creds
+scripts/data_cataloger/credentials/*
+!scripts/data_cataloger/credentials/.gitkeep
+!scripts/data_cataloger/credentials/README.md
+
