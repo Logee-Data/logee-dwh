@@ -39,7 +39,7 @@ dag = DAG(
     dag_id='L3_logee_order_ga',
     schedule_interval='@daily',
     default_args=default_args,
-    catchup=True
+    catchup=False
 )
 
 wait = TimeDeltaSensor(
