@@ -115,7 +115,6 @@ def do_sync_data_catalog(
 
     # TODO: push metadata to bigquery
     tables_by_id: dict = table_representation_result['tables_by_id']
-    print('debug2 tables_by_id', tables_by_id)
     sync_bigquery_tables_metadata(
         tables_by_id=tables_by_id,
         bigquery_data_project=bigquery_data_project,
