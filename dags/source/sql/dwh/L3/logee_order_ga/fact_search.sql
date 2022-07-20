@@ -166,7 +166,7 @@ WITH raw_base AS (
       PARSE_DATE("%Y%m%d", event_date) AS event_date,
       TIMESTAMP_MICROS(event_timestamp) AS event_timestamp,
       TIMESTAMP_MICROS(event_previous_timestamp) AS event_previous_timestamp,
-      TIMESTAMP_MICROS(user_first_touch_timestamp) AS user_first_touch_timestamp,
+      TIMESTAMP_MICROS(user_first_touch_timestamp) AS user_first_touch_timestamp
     )
   FROM event_params
   WHERE search_term IS NOT NULL OR search_term != ''
