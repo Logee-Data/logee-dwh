@@ -19,12 +19,14 @@ class Table:
         subfloor: str,
         name: str,
         columns_defined_list: dict,
+        description: str,
         inheritances_info: List[Dict] = [],
     ):
         self.table_id = table_id
         self.floor = floor # ex: L1
         self.subfloor = subfloor # ex: visibility
         self.name = name # ex: dma_logee_user
+        self.description = description
 
         print(f"initiating recursive walk for config file table columns: {table_id}")
         self.columns_defined: Dict[str, Dict] = self.convert_list_based_columns_to_dict_based(
@@ -322,51 +324,77 @@ def compare_sync_bigquery_tables_metadata(
             bigquery_table_address=target['bigquery_table_address'],
             bigquery_table=target['bigquery_table'],
         )
-        target['need_patch'] = compare_result['need_patch']
-        target['need_patch_reasons'] = compare_result['need_patch_reasons']
+        target['need_patch_schema'] = compare_result['need_patch_schema']
+        target['need_patch_schema_reasons'] = compare_result['need_patch_schema_reasons']
         target['full_patched_fields'] = compare_result['full_patched_fields']
+        target['need_patch_table_description'] = compare_result['need_patch_table_description']
+        target['need_patch_table_description_reasons'] = compare_result['need_patch_table_description_reasons']
+        target['desired_table_description'] = compare_result['desired_table_description']
 
     # validation: all columns still exist (there are no deleted SchemaField)
     # TODO: here
 
-    # print plan
     total_target: int = len(target_tables)
-    number_of_target_need_patch: int = len([None for target in target_tables.values() if target['need_patch']])
-    number_of_target_already_ok: int = total_target - number_of_target_need_patch
-    if number_of_target_need_patch > 0:
-        print(f"overview plan: will update {number_of_target_need_patch} out of {total_target} tables")
+    # print plan: schema update
+    number_of_target_need_patch_schema: int = len([None for target in target_tables.values() if target['need_patch_schema']])
+    number_of_target_already_ok: int = total_target - number_of_target_need_patch_schema
+    if number_of_target_need_patch_schema > 0:
+        print(f"=== overview plan for schema update: will update {number_of_target_need_patch_schema} out of {total_target} tables")
+        full_logs: List[str] = []
         for represented_table_id, target in target_tables.items():
-            if target['need_patch']:
-                reason_log: str = '\n'.join([f"- {reason}" for reason in target['need_patch_reasons']])
-                print((
-                    f"plan: will update column description for bigquery table: {target['bigquery_table_address']} "
+            if target['need_patch_schema']:
+                reason_log: str = '\n'.join([f"- {reason}" for reason in target['need_patch_schema_reasons']])
+                full_log: str = (
+                    f"plan: will update bigquery table: {target['bigquery_table_address']} "
                     f"(config = {represented_table_id}) because: \n"
                     f"{reason_log}"
-                    '\n'
-                ))
+                )
+                full_logs.append(full_log)
+        print('\n'.join(full_logs))
     else:
-        print(f"overview plan: will not update any tables, because all {number_of_target_already_ok} from {total_target} tables already have column description as defined in config")
+        print(f"=== overview plan for schema update: will not update any tables, because all {number_of_target_already_ok} from {total_target} tables already have column description as defined in config")
+
+    # print plan: table description update
+    number_of_target_need_patch_table_description: int = len([None for target in target_tables.values() if target['need_patch_table_description']])
+    number_of_target_already_ok: int = total_target - number_of_target_need_patch_table_description
+    if number_of_target_need_patch_table_description > 0:
+        print(f"=== overview plan for table_description update: will update {number_of_target_need_patch_table_description} out of {total_target} tables")
+        full_logs: List[str] = []
+        for represented_table_id, target in target_tables.items():
+            if target['need_patch_table_description']:
+                reason_log: str = '\n'.join([f"- {reason}" for reason in target['need_patch_table_description_reasons']])
+                full_log: str = (
+                    f"plan: will update bigquery table: {target['bigquery_table_address']} "
+                    f"(config = {represented_table_id}) because: \n"
+                    f"{reason_log}"
+                )
+                full_logs.append(full_log)
+        print('\n'.join(full_logs))
+    else:
+        print(f"=== overview plan for table_description update: will not update any tables, because all {number_of_target_already_ok} from {total_target} tables already have table description as defined in config")
 
     # sync
     if dryrun:
         print(f"dryrun is {dryrun}, thus, not updating bigquery tables")
     else:
         for represented_table_id, target in target_tables.items():
-            if target['need_patch']:
+            if target['need_patch_schema']:
+                target['bigquery_table'].schema = target['full_patched_fields']
                 print(f"execute: updating column description for bigquery table {target['bigquery_table_address']} (config = {represented_table_id})")
-                patch_bigquery_table(
-                    bigquery_client=bigquery_client,
-                    bigquery_table=target['bigquery_table'],
-                    full_patched_fields=target['full_patched_fields'],
-                )
+                bigquery_client.update_table(target['bigquery_table'], ['schema'])
+            if target['need_patch_table_description']:
+                target['bigquery_table'].description = target['desired_table_description']
+                print(f"execute: updating table description for bigquery table {target['bigquery_table_address']} (config = {represented_table_id})")
+                bigquery_client.update_table(target['bigquery_table'], ['description'])
 
 def patch_bigquery_table(
     bigquery_client: BigQueryClient,
     bigquery_table: BigQueryTable,
     full_patched_fields: List[SchemaField],
+    patched_property: List[str],
 ):
     bigquery_table.schema = full_patched_fields
-    bigquery_client.update_table(bigquery_table, ['schema'])
+    bigquery_client.update_table(bigquery_table, patched_property)
 
 def compare_representation_and_bigquery_table(
     represented_table_id: str,
@@ -378,27 +406,46 @@ def compare_representation_and_bigquery_table(
     bigquery_columns: List[SchemaField] = bigquery_table.schema
     tracing_breadcrumb_column: str = [f"[{bigquery_table_address}|{represented_table_id}]"]
 
+    # compare columns
     # print('debugx1 bigquery_table.schema', bigquery_table.schema)
-
     compare_walk_result: dict = compare_representation_and_bigquery_columns_walk(
         represented_columns=represented_columns,
         bigquery_columns=bigquery_columns,
         tracing_breadcrumb_column=tracing_breadcrumb_column,
     )
-    need_patch: bool = compare_walk_result['need_patch']
-    need_patch_reasons: List[str] = compare_walk_result['need_patch_reasons']
+    need_patch_schema: bool = compare_walk_result['need_patch_schema']
+    need_patch_schema_reasons: List[str] = compare_walk_result['need_patch_schema_reasons']
     full_patched_fields: List[SchemaField] = compare_walk_result['full_patched_fields']
-
-    # print('debugx1 need_patch', need_patch)
-    # print('debugx1 need_patch_reasons', need_patch_reasons)
+    # print('debugx1 need_patch_schema', need_patch_schema)
+    # print('debugx1 need_patch_schema_reasons', need_patch_schema_reasons)
     # print('debugx1 full_patched_fields', full_patched_fields)
     # print()
     # print()
 
+    # compare table description
+    if represented_table.description != bigquery_table.description:
+        need_patch_table_description: bool = True
+        need_patch_table_description_reasons: List[str] = [((
+            f"different table description "
+            f"[{bigquery_table_address}|{represented_table_id}]: "
+            f"config = '{represented_table.description}' | "
+            f"bigquery = '{bigquery_table.description}'"
+        ))]
+        desired_table_description: str = represented_table.description
+    else:
+        need_patch_table_description = False
+        need_patch_table_description_reasons = []
+        desired_table_description: str = bigquery_table.description
+
     return dict(
-        need_patch=need_patch,
-        need_patch_reasons=need_patch_reasons,
+        # schema comparison result
+        need_patch_schema=need_patch_schema,
+        need_patch_schema_reasons=need_patch_schema_reasons,
         full_patched_fields=full_patched_fields,
+        # table description comparison result
+        need_patch_table_description=need_patch_table_description,
+        need_patch_table_description_reasons=need_patch_table_description_reasons,
+        desired_table_description=desired_table_description,
     )
 
 def compare_representation_and_bigquery_columns_walk(
@@ -406,8 +453,8 @@ def compare_representation_and_bigquery_columns_walk(
     bigquery_columns: List[SchemaField],
     tracing_breadcrumb_column: List[str], # for logging purpose only
 ) -> dict:
-    need_patch: bool = False
-    need_patch_reasons: List[str] = []
+    need_patch_schema: bool = False
+    need_patch_schema_reasons: List[str] = []
     full_patched_fields: List[SchemaField] = []
     full_patched_fields_indexed: Dict[str, SchemaField] = dict() # updated field will get in here first before full_patched_fields for performance reason
 
@@ -427,8 +474,8 @@ def compare_representation_and_bigquery_columns_walk(
             represented_column_description: str = represented_column['description']
             bigquery_column_description: str = bigquery_column.description
             if represented_column_description != bigquery_column_description:
-                need_patch = True
-                need_patch_reasons.append((
+                need_patch_schema = True
+                need_patch_schema_reasons.append((
                     f"different description for column "
                     f"{'.'.join(tracing_breadcrumb_column + [represented_column_name])}: "
                     f"config = '{represented_column_description}' | "
@@ -460,9 +507,9 @@ def compare_representation_and_bigquery_columns_walk(
                         bigquery_columns=deeper_walk_bigquery_columns,
                         tracing_breadcrumb_column=(tracing_breadcrumb_column + [represented_column_name]),
                     )
-                    if deeper_walk_compare_result['need_patch']:
-                        need_patch = True
-                        need_patch_reasons += deeper_walk_compare_result['need_patch_reasons']
+                    if deeper_walk_compare_result['need_patch_schema']:
+                        need_patch_schema = True
+                        need_patch_schema_reasons += deeper_walk_compare_result['need_patch_schema_reasons']
                         atomic_full_patched_fields: List[SchemaField] = deeper_walk_compare_result['full_patched_fields']
                     else:
                         atomic_full_patched_fields: List[SchemaField] = bigquery_column.fields
@@ -497,8 +544,8 @@ def compare_representation_and_bigquery_columns_walk(
         full_patched_fields.append(field)
 
     return dict(
-        need_patch=need_patch,
-        need_patch_reasons=need_patch_reasons,
+        need_patch_schema=need_patch_schema,
+        need_patch_schema_reasons=need_patch_schema_reasons,
         full_patched_fields=full_patched_fields,
     )
 
@@ -620,6 +667,7 @@ def represent_tables(
                         subfloor=subfloor_folder['subfloor_folder_name'],
                         name=config_file['table_name'],
                         columns_defined_list=config_file['config']['schema']['columns'],
+                        description=config_file['config']['schema']['description'],
                     )
                     tables_by_id[table_id] = table
 
@@ -780,6 +828,16 @@ def validate_local_schema(
                             if not (mandatory_field in inheritance):
                                 is_valid = False
                                 invalid_reasons.append(f"field '{mandatory_field}' not found in schema.inherit.[{index}]")
+
+        # description (table description) should exist
+        if not ('description' in schema):
+            is_valid = False
+            invalid_reasons.append("field 'description' (table description) not exist in schema")
+        else:
+            # description should be str
+            if not isinstance(schema['description'], str):
+                is_valid = False
+                invalid_reasons.append(f"schema.description (table description) should be a string. found: {type(schema['description'])}")
 
     return dict(
         is_valid=is_valid,
