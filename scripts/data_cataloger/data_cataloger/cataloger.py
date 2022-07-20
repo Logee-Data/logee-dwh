@@ -7,12 +7,7 @@ import os
 import json
 import yaml
 import click
-
-class Table:
-    def __init__(
-        self,
-    ):
-        pass
+import copy
 
 def do_sync_data_catalog(
     parameters_path: str,
@@ -203,40 +198,114 @@ class Table:
         self.subfloor = subfloor # ex: visibility
         self.name = name # ex: dma_logee_user
 
-        self.columns_defined: Dict[Dict] = dict()
-        for column in columns_defined_list:
-            self.columns_defined[column['name']] = column
+        # self.columns_defined: Dict[Dict] = dict()
+        # for column in columns_defined_list:
+        #     self.columns_defined[column['name']] = column
+        print(f"initiating recursive walk for config file table columns: {table_id}")
+        self.columns_defined: Dict[str, Dict] = self.convert_list_based_columns_to_dict_based(
+            list_based_columns=columns_defined_list,
+        )
 
         self.inheritances_info = inheritances_info
         self.columns_inherited: Dict[Dict] = None
         self.is_inheritances_determined: bool = False
 
+    def convert_list_based_columns_to_dict_based(
+        self,
+        list_based_columns: List[Dict],
+    ) -> Dict[str, Dict]:
+        dict_based_columns: Dict[str, Dict] = dict()
+        for column in list_based_columns:
+            name: str = column['name']
+            description: str = column['description']
+            dict_based_columns[name] = dict(
+                name=name,
+                description=description,
+            )
+            if 'columns' in column:
+                dict_based_columns[name]['columns'] = self.convert_list_based_columns_to_dict_based(
+                    list_based_columns=column['columns'],
+                ) # call next recursive
+            else:
+                pass # at the end of recursive
+
+        return dict_based_columns
+
+    def get_columns_all(self) -> Dict[str, Dict]:
+        columns_all: dict = {}
+        for column_name, column_defined in self.columns_defined.items():
+            columns_all[column_name] = column_defined
+        if self.columns_inherited != None:
+            for column_name, column_inherited in self.columns_inherited.items():
+                columns_all[column_name] = column_inherited
+        return columns_all
+
     def determine_inheritance(self, tables_by_id: dict):
-        columns_inherited: Dict[Dict] = dict()
+        columns_inherited: Dict[str, Dict] = dict()
         for inheritance_info in self.inheritances_info:
             full_copy: bool = inheritance_info['full_copy']
             inheritance_table_id: str = inheritance_info['table']
-            inheritance_input_columns: list = inheritance_info['columns']
+            inheritance_info_columns: List[Dict] = inheritance_info['columns']
+            referred_inheritance_table: Table = tables_by_id[inheritance_table_id]
+            referred_columns: Dict[str, Dict] = referred_inheritance_table.get_columns_all()
             if full_copy: # will inherit all columns from parent. columns key from config will be ignored
-                referred_inheritance_table: Table = tables_by_id[inheritance_table_id]
-                for referred_column_name, referred_column in referred_inheritance_table.columns_defined.items():
-                    referred_column_description: str = referred_column['description']
-                    columns_inherited[referred_column_name] = dict(
-                        description=referred_column_description,
-                    )
+                
+                # for referred_column_name, referred_column in referred_inheritance_table.columns_defined.items():
+                #     referred_column_description: str = referred_column['description']
+                #     columns_inherited[referred_column_name] = dict(
+                #         description=referred_column_description,
+                #     )
+                #     # TODO: handle nested struct column
+                for referred_column_name, referred_column in referred_columns.items():
+                    columns_inherited[referred_column_name] = referred_column
             else:
                 # add columns defined in config
-                referred_inheritance_table: Table = tables_by_id[inheritance_table_id]
-                for inheritance_column in inheritance_input_columns:
-                    inheritance_column_name: str = inheritance_column['name']
-                    referred_column_description: str = referred_inheritance_table.columns_defined[inheritance_column_name]['description']
-                    columns_inherited[inheritance_column_name] = dict(
-                        description=referred_column_description,
-                    )
+                # for inheritance_column in inheritance_info_columns:
+                #     inheritance_column_name: str = inheritance_column['name']
+                #     referred_column_description: str = referred_inheritance_table.columns_defined[inheritance_column_name]['description']
+                #     columns_inherited[inheritance_column_name] = dict(
+                #         description=referred_column_description,
+                #     )
+                #      # TODO: handle nested struct column
+                columns_inherited_atomic = self.determine_inheritance_walk(
+                    inheritance_info_columns=inheritance_info_columns,
+                    referred_columns=referred_columns,
+                ) # recursive initiate here
+                for walked_column_name, walked_column in columns_inherited_atomic.items():
+                    columns_inherited[walked_column_name] = walked_column
 
         # print(f"debug {self.table_id} columns_inherited", columns_inherited)
-        self.columns_inherited: Dict[Dict] = columns_inherited
+        self.columns_inherited: Dict[str, Dict] = columns_inherited
         self.is_inheritances_determined: bool = True
+
+    def determine_inheritance_walk(
+        self,
+        inheritance_info_columns: List[Dict], # list of column dict taken directly from config file
+        referred_columns: Dict[str, Dict], # list of column ON THE SAME LEVEL with inheritance_info_columns
+    ) -> Dict[str, Dict]: # key = column name str, value = dict of name,desc,columns
+        columns_inherited_atomic: Dict[str, Dict] = dict()
+        for inheritance_info_column in inheritance_info_columns:
+            inheritance_info_column_name: str = inheritance_info_column['name']
+            inheritance_info_column_columns_child: List[Dict] = inheritance_info_column['columns'] \
+                if 'columns' in inheritance_info_column \
+                else None
+            assert inheritance_info_column_name in referred_columns, \
+                f"cannot find column {inheritance_info_column_name} (defined at config inherit) at referred columns at the same level {referred_columns}"
+            columns_inherited_atomic[inheritance_info_column_name]: Dict = dict(
+                name=inheritance_info_column_name,
+                description=referred_columns[inheritance_info_column_name]['description'],
+            ) # copy happens here
+            if inheritance_info_column_columns_child != None:
+                # recursive walk child
+                assert 'columns' in referred_columns[inheritance_info_column_name], \
+                    f"cannot find children columns (key 'columns') for {inheritance_info_column_name} at referred columns {inheritance_info_column}"
+                columns_inherited_atomic[inheritance_info_column_name]['columns']: Dict[str, Dict] = self.determine_inheritance_walk(
+                    inheritance_info_columns=inheritance_info_column_columns_child,
+                    referred_columns=referred_columns[inheritance_info_column_name]['columns'],
+                )
+            else:
+                columns_inherited_atomic[inheritance_info_column_name]['columns'] = None
+        return columns_inherited_atomic
 
     def is_ready_to_determine_inheritance(
         self,
