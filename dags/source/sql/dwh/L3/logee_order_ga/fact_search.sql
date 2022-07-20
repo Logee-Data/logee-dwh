@@ -9,7 +9,7 @@ WITH raw_base AS (
 ,ga_session_id AS (
   SELECT
     raw_base.*,
-    event_params_unnested.value.int_value AS ga_session_id,
+    CAST(event_params_unnested.value.int_value AS STRING) AS ga_session_id,
   FROM
     raw_base,
     UNNEST(event_params) event_params_unnested
@@ -119,7 +119,7 @@ WITH raw_base AS (
     firebase_screen_class.firebase_screen_class,
     firebase_event_origin.firebase_event_origin,
     ga_session_number.ga_session_number,
-    firebase_screen_id.firebase_screen_id,
+    CAST(firebase_screen_id.firebase_screen_id AS STRING) AS firebase_screen_id,
     engaged_session_event.engaged_session_event,
     search_term.search_term
   FROM
@@ -166,7 +166,7 @@ WITH raw_base AS (
       PARSE_DATE("%Y%m%d", event_date) AS event_date,
       TIMESTAMP_MICROS(event_timestamp) AS event_timestamp,
       TIMESTAMP_MICROS(event_previous_timestamp) AS event_previous_timestamp,
-      TIMESTAMP_MICROS(user_first_touch_timestamp) AS user_first_touch_timestamp
+      TIMESTAMP_MICROS(user_first_touch_timestamp) AS user_first_touch_timestamp,
     )
   FROM event_params
   WHERE search_term IS NOT NULL OR search_term != ''
