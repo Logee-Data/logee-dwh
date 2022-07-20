@@ -96,7 +96,7 @@ fact_product_view = BigQueryExecuteQueryOperator(
     }
 )
 
-wait >> fact_visit
+wait >> fact_product_view
 
 #  FACT_LGD_ORDER_SEARCH
 fact_search = BigQueryExecuteQueryOperator(
@@ -121,4 +121,4 @@ fact_search = BigQueryExecuteQueryOperator(
     }
 )
 
-wait >> fact_product_view
+wait >> fact_search
