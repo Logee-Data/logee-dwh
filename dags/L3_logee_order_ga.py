@@ -53,8 +53,8 @@ fact_visit = BigQueryExecuteQueryOperator(
     task_id='fact_visit',
     dag=dag,
     sql=get_sql_string(dags, 'source/sql/dwh/L3/logee_order_ga/fact_visit.sql'),
-    destination_dataset_table='logee-data-prod.L3_logee_order_ga.fact_visit',
-    write_disposition='WRITE_APPEND',
+    destination_dataset_table='logee-data-prod.L3_logee_order_ga.fact_visit${{ ds_nodash }}',
+    write_disposition='WRITE_TRUNCATE',
     allow_large_results=True,
     use_legacy_sql=False,
     location='asia-southeast2',
@@ -62,8 +62,7 @@ fact_visit = BigQueryExecuteQueryOperator(
         "ALLOW_FIELD_ADDITION", "ALLOW_FIELD_RELAXATION"
     ],
     time_partitioning={
-        "type": "DAY",
-        "field": 'event_timestamp'
+        "type": "DAY"
     },
     labels={
         "type": "scheduled",
@@ -73,3 +72,28 @@ fact_visit = BigQueryExecuteQueryOperator(
 )
 
 wait >> fact_visit
+
+#  FACT_LGD_ORDER_SEARCH
+fact_search = BigQueryExecuteQueryOperator(
+    task_id='fact_search',
+    dag=dag,
+    sql=get_sql_string(dags, 'source/sql/dwh/L3/logee_order_ga/fact_search.sql'),
+    destination_dataset_table='logee-data-prod.L3_logee_order_ga.fact_search${{ ds_nodash }}',
+    write_disposition='WRITE_TRUNCATE',
+    allow_large_results=True,
+    use_legacy_sql=False,
+    location='asia-southeast2',
+    schema_update_options=[
+        "ALLOW_FIELD_ADDITION", "ALLOW_FIELD_RELAXATION"
+    ],
+    time_partitioning={
+        "type": "DAY"
+    },
+    labels={
+        "type": "scheduled",
+        "level": "landing",
+        "runner": "airflow"
+    }
+)
+
+wait >> fact_search
