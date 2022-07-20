@@ -74,24 +74,10 @@ class Table:
             referred_inheritance_table: Table = tables_by_id[inheritance_table_id]
             referred_columns: Dict[str, Dict] = referred_inheritance_table.get_columns_all()
             if full_copy: # will inherit all columns from parent. columns key from config will be ignored
-                
-                # for referred_column_name, referred_column in referred_inheritance_table.columns_defined.items():
-                #     referred_column_description: str = referred_column['description']
-                #     columns_inherited[referred_column_name] = dict(
-                #         description=referred_column_description,
-                #     )
-                #     # TODO: handle nested struct column
                 for referred_column_name, referred_column in referred_columns.items():
                     columns_inherited[referred_column_name] = referred_column
             else:
                 # add columns defined in config
-                # for inheritance_column in inheritance_info_columns:
-                #     inheritance_column_name: str = inheritance_column['name']
-                #     referred_column_description: str = referred_inheritance_table.columns_defined[inheritance_column_name]['description']
-                #     columns_inherited[inheritance_column_name] = dict(
-                #         description=referred_column_description,
-                #     )
-                #      # TODO: handle nested struct column
                 columns_inherited_atomic = self.determine_inheritance_walk(
                     inheritance_info_columns=inheritance_info_columns,
                     referred_columns=referred_columns,
@@ -658,11 +644,6 @@ def represent_tables(
                 table.determine_inheritance(
                     tables_by_id=tables_by_id,
                 )
-
-    # TODO: remove debug
-    # print('tables_by_id.keys()', tables_by_id.keys())
-    # for table_id, table in tables_by_id.items():
-    #     print(f"{table_id} | columns_defined = {table.columns_defined} | columns_inherited = {table.columns_inherited}")
 
     return dict(
         tables_by_id=tables_by_id,
