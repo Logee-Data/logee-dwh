@@ -73,6 +73,31 @@ fact_visit = BigQueryExecuteQueryOperator(
 
 wait >> fact_visit
 
+#  FACT_LGD_ORDER_PRODUCT_VIEW
+fact_product_view = BigQueryExecuteQueryOperator(
+    task_id='fact_product_view',
+    dag=dag,
+    sql=get_sql_string(dags, 'source/sql/dwh/L3/logee_order_ga/fact_product_view.sql'),
+    destination_dataset_table='logee-data-prod.L3_logee_order_ga.fact_product_view${{ ds_nodash }}',
+    write_disposition='WRITE_TRUNCATE',
+    allow_large_results=True,
+    use_legacy_sql=False,
+    location='asia-southeast2',
+    schema_update_options=[
+        "ALLOW_FIELD_ADDITION", "ALLOW_FIELD_RELAXATION"
+    ],
+    time_partitioning={
+        "type": "DAY"
+    },
+    labels={
+        "type": "scheduled",
+        "level": "landing",
+        "runner": "airflow"
+    }
+)
+
+wait >> fact_visit
+
 #  FACT_LGD_ORDER_SEARCH
 fact_search = BigQueryExecuteQueryOperator(
     task_id='fact_search',
@@ -96,4 +121,4 @@ fact_search = BigQueryExecuteQueryOperator(
     }
 )
 
-wait >> fact_search
+wait >> fact_product_view
