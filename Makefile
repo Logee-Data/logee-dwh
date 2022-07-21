@@ -1,5 +1,5 @@
-cataloger_docker_image ?= asia.gcr.io/logee-data-cicd/logee-dwh/data_cataloger/general
-cataloger_docker_tag ?= 1.0.0
+cataloger_docker_image ?= sagaekakristi/gcp-data-cataloger
+cataloger_docker_tag ?= 1.0.1
 env ?= logee-data-dev
 dryrun ?= true
 linux_user_name = $(shell whoami)

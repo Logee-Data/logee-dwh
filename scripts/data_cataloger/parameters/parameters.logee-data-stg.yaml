@@ -1,0 +1,8 @@
+---
+allow_schema_null_or_undefined: true # will be false when ready
+
+bigquery_data_project: logee-data-stg
+bigquery_table_address_format: "{project}.{floor}_{subfloor}.{name}"
+
+bigquery_job_project: logee-data-stg
+bigquery_job_location: asia-southeast2
