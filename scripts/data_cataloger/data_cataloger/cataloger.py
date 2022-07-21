@@ -331,9 +331,6 @@ def compare_sync_bigquery_tables_metadata(
         target['need_patch_table_description_reasons'] = compare_result['need_patch_table_description_reasons']
         target['desired_table_description'] = compare_result['desired_table_description']
 
-    # validation: all columns still exist (there are no deleted SchemaField)
-    # TODO: here
-
     total_target: int = len(target_tables)
     # print plan: schema update
     number_of_target_need_patch_schema: int = len([None for target in target_tables.values() if target['need_patch_schema']])
@@ -373,19 +370,104 @@ def compare_sync_bigquery_tables_metadata(
     else:
         print(f"=== overview plan for table_description update: will not update any tables, because all {number_of_target_already_ok} from {total_target} tables already have table description as defined in config")
 
+    # prepare sync: patch table object in local
+    for represented_table_id, target in target_tables.items():
+        if target['need_patch_schema']:
+            target['bigquery_table'].schema = target['full_patched_fields']
+        if target['need_patch_table_description']:
+            target['bigquery_table'].description = target['desired_table_description']
+
+    # validation: all columns still exist (there are no deleted SchemaField)
+    pre_execute_validation_no_deleted_column(
+        bigquery_client=bigquery_client,
+        target_tables=target_tables,
+    )
+
     # sync
     if dryrun:
         print(f"dryrun is {dryrun}, thus, not updating bigquery tables")
     else:
         for represented_table_id, target in target_tables.items():
             if target['need_patch_schema']:
-                target['bigquery_table'].schema = target['full_patched_fields']
                 print(f"execute: updating column description for bigquery table {target['bigquery_table_address']} (config = {represented_table_id})")
                 bigquery_client.update_table(target['bigquery_table'], ['schema'])
             if target['need_patch_table_description']:
-                target['bigquery_table'].description = target['desired_table_description']
                 print(f"execute: updating table description for bigquery table {target['bigquery_table_address']} (config = {represented_table_id})")
                 bigquery_client.update_table(target['bigquery_table'], ['description'])
+
+def pre_execute_validation_no_deleted_column(
+    bigquery_client: BigQueryClient,
+    target_tables: Dict[str, Dict],
+):
+    """
+    Validate that no column are missing as final safeguard to prevent column drop.
+    """
+    for _, target in target_tables.items():
+        bigquery_table_address: str = target['bigquery_table_address']
+        patched_bigquery_table: BigQueryTable = target['bigquery_table']
+        original_bigquery_table: BigQueryTable = bigquery_client.get_table(
+            bigquery_table_address
+        )
+
+        tracing_breadcrumb_column: str = [f"[{bigquery_table_address}]"]
+        _pre_execute_validation_no_deleted_column_columns_walk(
+            patched_columns=patched_bigquery_table.schema,
+            original_columns=original_bigquery_table.schema,
+            tracing_breadcrumb_column=tracing_breadcrumb_column,
+        )
+        print(f"done pre-execute validation for table {bigquery_table_address}: ensured that there are no missing column")
+
+def _pre_execute_validation_no_deleted_column_columns_walk(
+    patched_columns: List[SchemaField],
+    original_columns: List[SchemaField],
+    tracing_breadcrumb_column: List[str], # for logging purpose only
+):
+    patched_num_columns: int = len(patched_columns)
+    original_num_columns: int = len(original_columns)
+    if patched_num_columns != original_num_columns:
+        raise Exception((
+            f"pre-execute validation fail, number of columns "
+            f"at level {'.'.join(tracing_breadcrumb_column)} from "
+            f"patched table ({patched_num_columns} columns) not equal "
+            f"original table ({original_num_columns} columns)"
+        ))
+
+    patched_columns_indexed: Dict[str, SchemaField] = convert_list_based_schemafields_to_dict_based(
+        bigquery_columns=patched_columns,
+    )
+
+    for original_column in original_columns:
+        original_column: SchemaField
+        # print(f"DEBUG9 original_column.name: {'.'.join(tracing_breadcrumb_column + [original_column.name])}")
+        if not (original_column.name in patched_columns_indexed):
+            raise Exception((
+                f"pre-execute validation fail, original column not found "
+                f"at patched table: column name = "
+                f"{'.'.join(tracing_breadcrumb_column + [original_column.name])}"
+            ))
+        else:
+            patched_column: SchemaField = patched_columns_indexed[original_column.name]
+            # raise Exception(f"DEBUG {type(original_column.fields)} {original_column.fields}")
+            original_column_child_len: int = len(original_column.fields)
+            patched_column_child_len: int = len(patched_column.fields)
+            if original_column_child_len == 0:
+                if original_column_child_len != patched_column_child_len:
+                    raise Exception((
+                        f"pre-execute validation fail, original column does not have child "
+                        f"length of SchemaField.fields = {original_column_child_len}"
+                        f"but the patched column have {patched_column_child_len} columns "
+                        f"at column: "
+                        f"{'.'.join(tracing_breadcrumb_column + [original_column.name])}"
+                    ))
+                else:
+                    pass # end of recursive
+            else:
+                # deeper walk
+                _pre_execute_validation_no_deleted_column_columns_walk(
+                    patched_columns=patched_column.fields,
+                    original_columns=original_column.fields,
+                    tracing_breadcrumb_column=(tracing_breadcrumb_column + [original_column.name]),
+                )
 
 def patch_bigquery_table(
     bigquery_client: BigQueryClient,
