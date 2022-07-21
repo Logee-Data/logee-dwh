@@ -52,6 +52,16 @@ cataloger_docker_general_push:
 
 # run
 cataloger_run_local:
+	export GOOGLE_APPLICATION_CREDENTIALS=/workspace/scripts/data_cataloger/credentials/service_account.$(env).json
+
+	/usr/local/bin/python \
+	/workspace/scripts/data_cataloger/data_cataloger/cataloger.py \
+	sync-data-catalog \
+	--parameters_path=/workspace/scripts/data_cataloger/parameters/parameters.$(env).yaml \
+	--service_account_path=/workspace/scripts/data_cataloger/credentials/service_account.$(env).json \
+	--dryrun=$(dryrun)
+
+cataloger_run_docker:
 	docker run -it --rm \
 	--network host \
 	--user $(linux_user_uid):$(linux_user_gid) \
