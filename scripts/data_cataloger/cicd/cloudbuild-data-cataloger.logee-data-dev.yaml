@@ -1,5 +1,6 @@
----
 steps:
-  - name: sagaekakristi/gcp-data-cataloger:1.0.0
-    entrypoint: /usr/bin/make
-    args: cataloger_run_local
+  - id: run data cataloger
+    name: 'sagaekakristi/gcp-data-cataloger:1.0.0'
+    entrypoint: '/usr/bin/make'
+    args:
+      - cataloger_run_local
