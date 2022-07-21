@@ -4,3 +4,5 @@ steps:
     entrypoint: '/usr/bin/make'
     args:
       - cataloger_run_local
+options:
+  logging: CLOUD_LOGGING_ONLY
