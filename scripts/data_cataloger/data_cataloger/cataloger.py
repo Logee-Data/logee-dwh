@@ -6,10 +6,8 @@ from google.cloud.bigquery.table import Table as BigQueryTable
 from google.api_core.exceptions import NotFound as NotFoundException
 
 import os
-import json
 import yaml
 import click
-import copy
 
 class Table:
     def __init__(
@@ -162,12 +160,6 @@ def do_sync_data_catalog(
     this_script_dir: str = \
         os.path.dirname(os.path.realpath(__file__))
 
-    # parameters_folder: str = os.path.join(
-    #     os.path.dirname(
-    #         this_script_dir
-    #     ),
-    #     'parameters',
-    # )
     parameters: dict = read_yaml(
         file_path=parameters_path,
     )
@@ -277,13 +269,6 @@ def compare_sync_bigquery_tables_metadata(
     """
     # Construct a BigQuery client object.
     bigquery_client: BigQueryClient = bigquery.Client()
-    # for table_name, table in tables_by_id.items():
-    #     table: Table
-    #     bigquery_table_address: str = table.construct_bigquery_table_address(
-    #         bigquery_table_address_format=bigquery_table_address_format,
-    #         bigquery_data_project=bigquery_data_project,
-    #     )
-    #     print('bigquery_table_address', bigquery_table_address)
 
     target_tables: Dict[str, Dict] = dict() # including table represented in config and table from bigquery
     target_tables_not_found: Dict[str, Dict] = dict()
@@ -304,7 +289,7 @@ def compare_sync_bigquery_tables_metadata(
                 represented_table=represented_table,
                 bigquery_table_address=bigquery_table_address,
             )
-            print(f"warning, bigquery table not found for: {bigquery_table_address}")
+            print(f"warning, bigquery table not found for: {bigquery_table_address} | exception = {str(ex)}")
         else:
             target_tables[represented_table_id] = dict(
                 represented_table_id=represented_table_id,
@@ -643,93 +628,6 @@ def convert_list_based_schemafields_to_dict_based(
         bigquery_columns_indexed[schema_field.name] = schema_field
     return bigquery_columns_indexed
 
-def get_existing_bigquery_table(
-    bigquery_table_id: str,
-    bigquery_client: BigQueryClient,
-):
-    bigquery_table: BigQueryTable = bigquery_client.get_table(
-        bigquery_table_id
-    )
-
-    # View table properties
-    # print('type(table)', type(table))
-    # print(
-    #     "Got table '{}.{}.{}'.".format(table.project, table.dataset_id, table.table_id)
-    # )
-    # print("Table schema: {}".format(table.schema))
-    # print("Table description: {}".format(table.description))
-    # print("Table has {} rows".format(table.num_rows))
-
-    # table_schema: List[SchemaField] = table.schema
-
-    # print('debug table', table)
-    # print('debug table_schema', table_schema)
-    # print('type(table)', type(table))
-    # full_updated_fields: List[SchemaField] = []
-    # for bigquery_schema_field in table_schema:
-    #     # fields: List[SchemaField] = []
-    #     if bigquery_schema_field.name == 'user_meta':
-    #         fields_user_meta: List[SchemaField] = []
-    #         for bigquery_schema_field_user_meta in bigquery_schema_field.fields:
-    #             # print('debug2 bigquery_schema_field_user_meta', bigquery_schema_field_user_meta)
-    #             if bigquery_schema_field_user_meta.name == 'phone':
-    #                 print('debug3 bigquery_schema_field_user_meta.description', bigquery_schema_field_user_meta.description)
-    #                 fields_user_meta.append(SchemaField(
-    #                     name=bigquery_schema_field_user_meta.name,
-    #                     field_type=bigquery_schema_field_user_meta.field_type,
-    #                     mode=bigquery_schema_field_user_meta.mode,
-    #                     description='this is just a meta test 2',
-    #                     fields=bigquery_schema_field_user_meta.fields,
-    #                     policy_tags=bigquery_schema_field_user_meta.policy_tags,
-    #                     precision=bigquery_schema_field_user_meta.precision,
-    #                     scale=bigquery_schema_field_user_meta.scale,
-    #                     max_length=bigquery_schema_field_user_meta.max_length,
-    #                 ))
-    #             else:
-    #                 fields_user_meta.append(bigquery_schema_field_user_meta)
-    #         full_updated_fields.append(SchemaField(
-    #             name=bigquery_schema_field.name,
-    #             field_type=bigquery_schema_field.field_type,
-    #             mode=bigquery_schema_field.mode,
-    #             description=bigquery_schema_field.description,
-    #             fields=fields_user_meta,
-    #             policy_tags=bigquery_schema_field.policy_tags,
-    #             precision=bigquery_schema_field.precision,
-    #             scale=bigquery_schema_field.scale,
-    #             max_length=bigquery_schema_field.max_length,
-    #         ))
-    #     else:
-    #         full_updated_fields.append(bigquery_schema_field)
-    # print('debug4 full_updated_fields', full_updated_fields)
-    # table.schema = full_updated_fields
-    # bigquery_client.update_table(table, ['schema'])
-
-    # update_table_column_description(
-    #     bigquery_client=bigquery_client,
-    #     bigquery_job_project=bigquery_job_project,
-    #     bigquery_job_location=bigquery_job_location,
-    # )
-
-# def update_table_column_description(
-#     bigquery_client,
-#     bigquery_job_project: str,
-#     bigquery_job_location: str,
-# ):
-#     alter_col_desc_query: str = (
-#         "ALTER TABLE `logee-data-dev.tmp.l1_orders`"
-#         "ALTER COLUMN op_masked \n"
-#         "SET OPTIONS (\n"
-#         "description=\"the description of op which is masked v2\"\n"
-#         ");"
-#     )
-#     print(f"running query: {alter_col_desc_query}")
-#     query_job = bigquery_client.query(
-#         query=alter_col_desc_query,
-#         project=bigquery_job_project,
-#         location=bigquery_job_location,
-#     )
-#     _ = query_job.result()
-
 def represent_tables(
     floor_folders: list,
 ) -> dict:
@@ -758,7 +656,7 @@ def represent_tables(
                     if schema == None:
                         tables_by_id[table_id].is_inheritances_determined = True
                     else:
-                        columns: list = schema['columns']
+                        # columns: list = schema['columns']
                         inheritances_info: list = schema['inherit']
                         tables_by_id[table_id].inheritances_info = inheritances_info
                         number_of_inheritances_info: int = len(inheritances_info)
