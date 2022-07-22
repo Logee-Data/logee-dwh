@@ -1,5 +1,5 @@
 cataloger_docker_image ?= sagaekakristi/gcp-data-cataloger
-cataloger_docker_tag ?= 1.0.1
+cataloger_docker_tag ?= 1.0.2
 env ?= logee-data-dev
 dryrun ?= true
 linux_user_name = $(shell whoami)
@@ -12,27 +12,16 @@ cataloger_test: cataloger_test_pyflakes
 cataloger_test_pyflakes: cataloger_test_pyflakes_src cataloger_test_pyflakes_tests
 
 cataloger_test_pyflakes_src:
-	docker run -it --rm \
-	-v $(shell pwd):/workspace \
-	--entrypoint pyflakes \
-	eeacms/pyflakes:py3 \
-	/workspace/scripts/data_cataloger/data_cataloger/
+	pyflakes /workspace/scripts/data_cataloger/data_cataloger/
 
 cataloger_test_pyflakes_tests:
-	docker run -it --rm \
-	-v $(shell pwd):/workspace \
-	--entrypoint pyflakes \
-	eeacms/pyflakes:py3 \
-	/workspace/scripts/data_cataloger/tests/
+	pyflakes /workspace/scripts/data_cataloger/tests/
 
 cataloger_test_unit:
-	docker run -it --rm \
-	-v $(shell pwd):/workspace \
-	-e PYTHONPATH=/workspace \
-	--entrypoint pytest \
-	$(cataloger_docker_image):$(cataloger_docker_tag) \
+	export PYTHONPATH=/workspace/scripts/data_cataloger && \
+	pytest \
 	--cov=data_cataloger \
-	--cov-config=/workspace/.coveragerc \
+	--cov-config=/workspace/scripts/data_cataloger/.coveragerc \
 	--cov-report term-missing \
 	/workspace/scripts/data_cataloger/tests/unit
 
@@ -83,6 +72,7 @@ cataloger_shell:
 	--user $(linux_user_uid):$(linux_user_gid) \
 	-e GOOGLE_APPLICATION_CREDENTIALS=/workspace/scripts/data_cataloger/credentials/service_account.$(env).json \
 	-v /tmp:/tmp \
-	-v $(shell pwd):/workspace:ro \
+	-v $(shell pwd):/workspace \
+	--workdir=/workspace \
 	--entrypoint bash \
 	$(cataloger_docker_image):$(cataloger_docker_tag)

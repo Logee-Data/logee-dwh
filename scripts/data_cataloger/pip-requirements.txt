@@ -8,4 +8,5 @@ pytest-cov==3.0.0
 coverage==6.3.1
 Faker==13.11.1
 pytz==2022.1
+pyflakes==2.4.0
 google-cloud-bigquery==3.2.0

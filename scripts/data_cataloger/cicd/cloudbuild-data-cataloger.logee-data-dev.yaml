@@ -1,12 +1,18 @@
 steps:
   - id: test pyflakes
-    name: 'sagaekakristi/gcp-data-cataloger:1.0.1'
+    name: 'sagaekakristi/gcp-data-cataloger:1.0.2'
     entrypoint: '/usr/bin/make'
     args:
       - cataloger_test_pyflakes
 
+  - id: test unit
+    name: 'sagaekakristi/gcp-data-cataloger:1.0.2'
+    entrypoint: '/usr/bin/make'
+    args:
+      - cataloger_test_unit
+
   - id: dry run data cataloger
-    name: 'sagaekakristi/gcp-data-cataloger:1.0.1'
+    name: 'sagaekakristi/gcp-data-cataloger:1.0.2'
     entrypoint: '/usr/bin/make'
     args:
       - cataloger_run_local
@@ -14,7 +20,7 @@ steps:
       - dryrun=true
 
   - id: execute run data cataloger
-    name: 'sagaekakristi/gcp-data-cataloger:1.0.1'
+    name: 'sagaekakristi/gcp-data-cataloger:1.0.2'
     entrypoint: '/usr/bin/make'
     args:
       - cataloger_run_local
