@@ -358,10 +358,7 @@ def compare_sync_bigquery_tables_metadata(
     # prepare sync: patch table object in local
     for represented_table_id, target in target_tables.items():
         if target['need_patch_schema']:
-            # print(f"DEBUG-B1 {target['bigquery_table'].schema}")
-            # print(f"DEBUG-B3 {target['full_patched_fields']}")
             target['bigquery_table'].schema = target['full_patched_fields']
-            # print(f"DEBUG-B2 {target['bigquery_table'].schema}")
         if target['need_patch_table_description']:
             target['bigquery_table'].description = target['desired_table_description']
 
@@ -408,9 +405,6 @@ def pre_execute_validation_no_deleted_column(
         )
 
         tracing_breadcrumb_column: str = [f"[{bigquery_table_address}]"]
-        # print(f'DEBUGA1 {tracing_breadcrumb_column}')
-        # print(f"DEBUGA2 {patched_bigquery_table}")
-        # print(f"DEBUGA3 {patched_bigquery_table.schema}")
 
         if target['need_patch_schema']:
             patched_bigquery_table_schema: List[SchemaField] = target['full_patched_fields']
@@ -602,9 +596,7 @@ def compare_representation_and_bigquery_columns_walk(
                         atomic_full_patched_fields: List[SchemaField] = deeper_walk_compare_result['full_patched_fields']
                     else:
                         atomic_full_patched_fields: List[SchemaField] = bigquery_column.fields
-        
-            # print(f"DEBUG-Cbefore bigquery_column.name {bigquery_column.name}")
-            # print(f"DEBUG-Cbefore bigquery_column.precision {bigquery_column.precision}")
+
             atomic_full_patched_field: SchemaField = SchemaField(
                 name=bigquery_column.name,
                 field_type=bigquery_column.field_type,
@@ -616,8 +608,6 @@ def compare_representation_and_bigquery_columns_walk(
                 scale=bigquery_column.scale,
                 max_length=bigquery_column.max_length,
             )
-            # print(f"DEBUG-Cafter bigquery_column.name {bigquery_column.name}")
-            # print(f"DEBUG-Cafter bigquery_column.precision {bigquery_column.precision}")
             full_patched_fields_indexed[bigquery_column.name] = atomic_full_patched_field
 
     # iterate columns from bigquery to add to updated fields (exist in BQ, not exist in config)
