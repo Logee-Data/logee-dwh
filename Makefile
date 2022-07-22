@@ -65,7 +65,7 @@ cataloger_run_docker:
 	--service_account_path=/workspace/scripts/data_cataloger/credentials/service_account.$(env).json \
 	--dryrun=$(dryrun)
 
-# for debugging, trial & error
+# for debugging, trial and error
 cataloger_shell:
 	docker run -it --rm \
 	--network host \
