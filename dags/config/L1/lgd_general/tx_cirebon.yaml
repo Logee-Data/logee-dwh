@@ -1,0 +1,6 @@
+dag_id: L1_lgd_general_tx_cirebon
+source: logee-data-prod.stg_sheets.tx_cirebon
+destination: logee-data-prod.L1_lgd_general.tx_cirebon
+sql: source/sql/dwh/L1/lgd_general/tx_cirebon.sql
+schedule: @daily
+time_partitioning: published_timestamp
