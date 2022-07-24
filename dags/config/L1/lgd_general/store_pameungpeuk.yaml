@@ -1,0 +1,6 @@
+dag_id: L1_lgd_general_store_pameungpeuk
+source: logee-data-prod.stg_sheets.store_pameungpeuk
+destination: logee-data-prod.L1_lgd_general.store_pameungpeuk
+sql: source/sql/dwh/L1/lgd_general/store_pameungpeuk.sql
+schedule: @daily
+time_partitioning: published_timestamp
