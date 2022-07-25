@@ -1,0 +1,6 @@
+dag_id: L1_lgd_general_tx_cirebon_delivery
+source: logee-data-prod.stg_sheets.tx_cirebon_ngirim
+destination: logee-data-prod.L1_lgd_general.tx_cirebon_delivery
+sql: source/sql/dwh/L1/lgd_general/tx_cirebon_delivery.sql
+schedule: 0 17 * * *
+time_partitioning: published_timestamp
