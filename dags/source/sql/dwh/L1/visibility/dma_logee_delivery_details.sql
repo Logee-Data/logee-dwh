@@ -49,7 +49,14 @@ WITH base AS (
         CAST(IF(JSON_EXTRACT_SCALAR(destination_list, '$.destinationLatitude') = "", NULL, JSON_EXTRACT_SCALAR(destination_list, '$.destinationLatitude')) AS FLOAT64) AS destination_latitude,
         CAST(IF(JSON_EXTRACT_SCALAR(destination_list, '$.destinationLongitude') = "", NULL, JSON_EXTRACT_SCALAR(destination_list, '$.destinationLongitude')) AS FLOAT64) AS destination_longitude,
         IF(JSON_EXTRACT_SCALAR(destination_list, '$.destinationLocation') = "", NULL, JSON_EXTRACT_SCALAR(destination_list, '$.destinationLocation')) AS destination_location,
-        IF(JSON_EXTRACT_SCALAR(destination_list, '$.destinationPicPhone') = "", NULL, JSON_EXTRACT_SCALAR(destination_list, '$.destinationPicPhone')) AS destination_pic_phone
+        IF(JSON_EXTRACT_SCALAR(destination_list, '$.destinationPicPhone') = "", NULL, JSON_EXTRACT_SCALAR(destination_list, '$.destinationPicPhone')) AS destination_pic_phone,
+        CAST(IF(REPLACE(JSON_EXTRACT(destination_list, '$.destinationArrivedTime'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(destination_list, '$.destinationArrivedTime'), '"', '')) AS TIMESTAMP) AS destination_arrived_time,
+        IF(REPLACE(JSON_EXTRACT(destination_list, '$.destinationCargoImage'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(destination_list, '$.destinationCargoImage'), '"', '')) AS destination_cargo_image,
+        CAST(IF(REPLACE(JSON_EXTRACT(destination_list, '$.destinationCargoImageDate'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(destination_list, '$.destinationCargoImageDate'), '"', '')) AS TIMESTAMP) AS destination_cargo_image_date,
+        IF(REPLACE(JSON_EXTRACT(destination_list, '$.driverNote'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(destination_list, '$.driverNote'), '"', '')) AS driver_note,
+        IF(REPLACE(JSON_EXTRACT(destination_list, '$.reviewedDeliveryOrderFile'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(destination_list, '$.reviewedDeliveryOrderFile'), '"', '')) AS reviewed_delivery_order_file,
+        CAST(IF(REPLACE(JSON_EXTRACT(destination_list, '$.reviewedDeliveryOrderFileDate'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(destination_list, '$.reviewedDeliveryOrderFileDate'), '"', '')) AS TIMESTAMP) AS reviewed_delivery_order_file_date,
+        IF(REPLACE(JSON_EXTRACT(destination_list, '$.assignmentLetterFile'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(destination_list, '$.assignmentLetterFile'), '"', '')) AS assignment_letter_file
       )
     ) AS destination_list
   FROM
@@ -84,6 +91,7 @@ SELECT
   REPLACE(JSON_EXTRACT(A.data, '$.paymentTypeImage'), '"', '') AS payment_type_image,
   REPLACE(JSON_EXTRACT(A.data, '$.paymentTypeName'), '"', '') AS payment_type_name,
   CAST(REPLACE(JSON_EXTRACT(A.data, '$.pickUpTime'), '"', '') AS TIMESTAMP) AS pick_up_time,
+  IF(REPLACE(JSON_EXTRACT(A.data, '$.pricingId'), '"', '') = "", NULL, JSON_EXTRACT(A.data, '$.pricingId')) AS pricing_id,
   CAST(IF(JSON_EXTRACT_SCALAR(A.data, '$.taxAmount') = "", NULL, JSON_EXTRACT_SCALAR(A.data, '$.taxAmount')) AS FLOAT64) AS tax_amount,
   CAST(IF(JSON_EXTRACT_SCALAR(A.data, '$.totalAmount') = "", NULL, JSON_EXTRACT_SCALAR(A.data, '$.totalAmount')) AS FLOAT64) AS total_amount,
   CAST(IF(JSON_EXTRACT_SCALAR(A.data, '$.tripFeeAmount') = "", NULL, JSON_EXTRACT_SCALAR(A.data, '$.tripFeeAmount')) AS FLOAT64) AS trip_fee_amount,
@@ -150,4 +158,3 @@ FROM
   LEFT JOIN delivery_detail_status C
   ON A.data = C.data
   AND A.ts = C.published_timestamp
-
