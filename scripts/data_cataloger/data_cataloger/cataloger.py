@@ -62,7 +62,10 @@ class Table:
             columns_all[column_name] = column_defined
         if self.columns_inherited != None:
             for column_name, column_inherited in self.columns_inherited.items():
-                columns_all[column_name] = column_inherited
+                if column_name in self.columns_defined:
+                    pass # the column defined in ['columns'] will take precedence over ['inherit']
+                else:
+                    columns_all[column_name] = column_inherited
         return columns_all
 
     def determine_inheritance(self, tables_by_id: dict):
