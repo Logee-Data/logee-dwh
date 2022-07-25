@@ -63,7 +63,7 @@ class Table:
         if self.columns_inherited != None:
             for column_name, column_inherited in self.columns_inherited.items():
                 if column_name in self.columns_defined:
-                    pass # the column defined in ['columns'] will take precedence over ['inherit']
+                    pass # the column defined in columns.master will take precedence over columns.inherit
                 else:
                     columns_all[column_name] = column_inherited
         return columns_all
@@ -665,7 +665,7 @@ def represent_tables(
                         floor=floor_folder['floor_folder_name'],
                         subfloor=subfloor_folder['subfloor_folder_name'],
                         name=config_file['table_name'],
-                        columns_defined_list=config_file['config']['schema']['columns'],
+                        columns_defined_list=config_file['config']['schema']['columns']['master'],
                         description=config_file['config']['schema']['description'],
                     )
                     tables_by_id[table_id] = table
@@ -675,8 +675,7 @@ def represent_tables(
                     if schema == None:
                         tables_by_id[table_id].is_inheritances_determined = True
                     else:
-                        # columns: list = schema['columns']
-                        inheritances_info: list = schema['inherit']
+                        inheritances_info: list = schema['columns']['inherit']
                         tables_by_id[table_id].inheritances_info = inheritances_info
                         number_of_inheritances_info: int = len(inheritances_info)
 
@@ -802,31 +801,41 @@ def validate_local_schema(
             invalid_reasons.append("field 'columns' not exist in schema")
         else:
             # columns should be list
-            if not isinstance(schema['columns'], list):
+            if not isinstance(schema['columns'], dict):
                 is_valid = False
-                invalid_reasons.append(f"schema.columns should be a list. found: {type(schema['columns'])}")
-
-        # inherit should exist
-        if not ('inherit' in schema):
-            is_valid = False
-            invalid_reasons.append("field 'inherit' not exist in schema")
-        else:
-            # inherit should be list
-            if not isinstance(schema['inherit'], list):
-                is_valid = False
-                invalid_reasons.append(f"schema.inherit should be a list. found: {type(schema['inherit'])}")
+                invalid_reasons.append(f"schema.columns should be a dictionary / map. found: {type(schema['columns'])}")
             else:
-                for index, inheritance in enumerate(schema['inherit']):
-                    # inherit items should be dict
-                    if not isinstance(inheritance, dict):
+                columns: dict = schema['columns']
+
+                # master should exist
+                if not ('master' in columns):
+                    is_valid = False
+                    invalid_reasons.append("field 'master' not exist in schema.columns")
+                else:
+                    if not isinstance(columns['master'], list):
                         is_valid = False
-                        invalid_reasons.append(f"schema.inherit.[{index}] should be a dict. found: {type(inheritance)}")
+                        invalid_reasons.append(f"schema.columns.master should be a list. found: {type(columns['master'])}")
+
+                # inherit should exist
+                if not ('inherit' in columns):
+                    is_valid = False
+                    invalid_reasons.append("field 'inherit' not exist in schema.columns")
+                else:
+                    if not isinstance(columns['inherit'], list):
+                        is_valid = False
+                        invalid_reasons.append(f"schema.columns.inherit should be a list. found: {type(columns['inherit'])}")
                     else:
-                        # inherit.[].table_id should exist
-                        for mandatory_field in ['table', 'full_copy', 'columns']:
-                            if not (mandatory_field in inheritance):
+                        for index, inheritance in enumerate(columns['inherit']):
+                            # inherit items should be dict
+                            if not isinstance(inheritance, dict):
                                 is_valid = False
-                                invalid_reasons.append(f"field '{mandatory_field}' not found in schema.inherit.[{index}]")
+                                invalid_reasons.append(f"schema.columns.inherit.[{index}] should be a dict. found: {type(inheritance)}")
+                            else:
+                                # inherit.[].table_id should exist
+                                for mandatory_field in ['table', 'full_copy', 'columns']:
+                                    if not (mandatory_field in inheritance):
+                                        is_valid = False
+                                        invalid_reasons.append(f"field '{mandatory_field}' not found in schema.columns.inherit.[{index}]")
 
         # description (table description) should exist
         if not ('description' in schema):
