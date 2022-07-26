@@ -1,0 +1,48 @@
+steps:
+  # test
+  - id: test pyflakes
+    name: 'sagaekakristi/gcp-data-cataloger:1.0.2'
+    entrypoint: '/usr/bin/make'
+    args:
+      - cataloger_test_pyflakes
+
+  - id: test unit
+    name: 'sagaekakristi/gcp-data-cataloger:1.0.2'
+    entrypoint: '/usr/bin/make'
+    args:
+      - cataloger_test_unit
+
+  # dry run
+  - id: dry-run data cataloger at development environment
+    name: 'sagaekakristi/gcp-data-cataloger:1.0.2'
+    entrypoint: '/usr/bin/make'
+    args:
+      - cataloger_run_local
+      - env=logee-data-dev
+      - dryrun=true
+  - id: dry-run data cataloger at staging environment
+    name: 'sagaekakristi/gcp-data-cataloger:1.0.2'
+    entrypoint: '/usr/bin/make'
+    args:
+      - cataloger_run_local
+      - env=logee-data-stg
+      - dryrun=true
+  - id: dry-run data cataloger at production environment
+    name: 'sagaekakristi/gcp-data-cataloger:1.0.2'
+    entrypoint: '/usr/bin/make'
+    args:
+      - cataloger_run_local
+      - env=logee-data-prod
+      - dryrun=true
+
+  # execute
+  - id: run data cataloger at development environment
+    name: 'sagaekakristi/gcp-data-cataloger:1.0.2'
+    entrypoint: '/usr/bin/make'
+    args:
+      - cataloger_run_local
+      - env=logee-data-dev
+      - dryrun=false
+
+options:
+  logging: CLOUD_LOGGING_ONLY
