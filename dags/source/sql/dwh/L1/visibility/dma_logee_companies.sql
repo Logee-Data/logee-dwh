@@ -19,7 +19,7 @@ base AS (
     ) AS allowed_payment_type
   FROM
     base,
-    UNNEST(JSON_EXTRACT_ARRAY(data, '$.partnerIds')) AS allowed_payment_type
+    UNNEST(JSON_EXTRACT_ARRAY(data, '$.allowedPaymentType')) AS allowed_payment_type
   GROUP BY 1,2
 )
 -- END
@@ -155,7 +155,7 @@ SELECT
   REPLACE(JSON_EXTRACT(A.data, '$.createdBy'), '"', '') AS created_by,
   CAST(REPLACE(JSON_EXTRACT(A.data, '$.createdAt'), '"', '') AS TIMESTAMP) AS created_at,
   REPLACE(JSON_EXTRACT(A.data, '$.modifiedBy'), '"', '') AS modified_by,
-  CAST(REPLACE(JSON_EXTRACT(A.data, '$.modifiedAt'), '"', '') AS TIMESTAMP) AS modified_at,
+  IF(REPLACE(JSON_EXTRACT(A.data, '$.modifiedBy'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(A.data, '$.modifiedBy'), '"', '')) AS modified_by,
   IF(REPLACE(JSON_EXTRACT(A.data, '$.bankAccountName'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(A.data, '$.bankAccountName'), '"', '')) AS bank_account_name,
   REPLACE(JSON_EXTRACT(A.data, '$.bankAccountNum'), '"', '') AS bank_account_num,
   REPLACE(JSON_EXTRACT(A.data, '$.tracking'), '"', '') AS tracking,
