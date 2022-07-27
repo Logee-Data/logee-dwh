@@ -65,6 +65,18 @@ WITH base AS (
   GROUP BY 1,2
 )
 
+,delivery_detail_ids AS (
+  SELECT
+    data,
+    ts AS published_timestamp,
+    ARRAY_AGG(
+        IF(REPLACE(delivery_detail_ids, '"', '') = "", NULL, REPLACE(delivery_detail_ids, '"', '')) IGNORE NULLS
+    ) AS delivery_detail_ids
+  FROM
+    base,
+    UNNEST(JSON_EXTRACT_ARRAY(data, '$.deliveryDetailIds')) AS delivery_detail_ids
+  GROUP BY 1, 2
+)
 
 SELECT
   REPLACE(JSON_EXTRACT(A.data, '$.deliveryDetailId'), '"', '') AS delivery_detail_id,
@@ -104,8 +116,8 @@ SELECT
   REPLACE(JSON_EXTRACT(A.data, '$.originAddress'), '"', '') AS origin_address,
   REPLACE(JSON_EXTRACT(A.data, '$.originCity'), '"', '') AS origin_city,
   REPLACE(JSON_EXTRACT(A.data, '$.originLocation'), '"', '') AS origin_location,
-  REPLACE(JSON_EXTRACT(A.data, '$.originLatitude'), '"', '') AS origin_latitude,
-  REPLACE(JSON_EXTRACT(A.data, '$.originLongitude'), '"', '') AS origin_longitude,
+  CAST(REPLACE(JSON_EXTRACT(A.data, '$.originLatitude'), '"', '') AS FLOAT64) AS origin_latitude,
+  CAST(REPLACE(JSON_EXTRACT(A.data, '$.originLongitude'), '"', '') AS FLOAT64) AS origin_longitude,
   REPLACE(JSON_EXTRACT(A.data, '$.originPicName'), '"', '') AS origin_pic_name,
   REPLACE(JSON_EXTRACT(A.data, '$.originPicPhone'), '"', '') AS origin_pic_phone,
   CAST(REPLACE(JSON_EXTRACT(A.data, '$.destinationCount'), '"', '') AS INT64) AS destination_count,
@@ -139,7 +151,7 @@ SELECT
   C.delivery_detail_status,
   IF(REPLACE(JSON_EXTRACT(A.data, '$.cargoInvoiceFile'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(A.data, '$.cargoInvoiceFile'), '"', '')) AS cargo_invoice_file,
   IF(REPLACE(JSON_EXTRACT(A.data, '$.truckInvoiceFile'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(A.data, '$.truckInvoiceFile'), '"', '')) AS truck_invoice_file,
-  IF(REPLACE(JSON_EXTRACT(A.data, '$.deliveryDetailIds'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(A.data, '$.deliveryDetailIds'), '"', '')) AS delivery_detail_ids,
+  D.delivery_detail_ids,
   CAST(REPLACE(JSON_EXTRACT(A.data, '$.isActive'), '"', '') AS BOOLEAN) AS is_active,
   CAST(REPLACE(JSON_EXTRACT(A.data, '$.isDeleted'), '"', '') AS BOOLEAN) AS is_deleted,
   IF(REPLACE(JSON_EXTRACT(A.data, '$.createdBy'), '"', '') = '', NULL, REPLACE(JSON_EXTRACT(A.data, '$.createdBy'), '"', '')) AS created_by,
@@ -158,3 +170,7 @@ FROM
   LEFT JOIN delivery_detail_status C
   ON A.data = C.data
   AND A.ts = C.published_timestamp
+
+  LEFT JOIN delivery_detail_ids D
+  ON A.data = D.data
+  AND A.ts = D.published_timestamp
