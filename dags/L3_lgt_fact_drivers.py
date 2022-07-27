@@ -3,12 +3,13 @@ from datetime import datetime, timedelta
 from airflow import DAG
 from airflow.sensors.time_delta_sensor import TimeDeltaSensor
 from airflow.providers.google.cloud.operators.bigquery import BigQueryExecuteQueryOperator
-# from airflow.sensors.external_task import ExternalTaskSensor
+from airflow.sensors.external_task import ExternalTaskSensor
 
 
 def get_sql_string(_dags, _path):
     """
     To read the SQL files and return the SQL query as a string
+
     :param _dags: The base root folder
     :type _dags: str
     :param _path: Location of the SQL file
@@ -35,24 +36,25 @@ default_args = {
 }
 
 dag = DAG(
-    dag_id='L3_lgd_voucher',
+    dag_id='L3_lgt_fact_drivers',
     schedule_interval='0 */3 * * *',
     default_args=default_args,
     catchup=False
 )
 
-wait = TimeDeltaSensor(
-    task_id='wait_for_data',
+external_task = ExternalTaskSensor(
+    task_id=f'wait_L2_visibility_dma_logee_drivers',
     dag=dag,
-    delta=timedelta(hours=9)
+    external_dag_id='L2_visibility_dma_logee_drivers',
+    external_task_id='move_L1_to_L2'
 )
 
-#  FACT_LGD_VOUCHER
-fact_lgd_voucher = BigQueryExecuteQueryOperator(
-    task_id='fact_lgd_voucher',
+#  FACT_DMA_LOGEE_DRIVERS
+fact_dma_logee_drivers = BigQueryExecuteQueryOperator(
+    task_id='L3_lgt_fact_drivers',
     dag=dag,
-    sql=get_sql_string(dags, 'source/sql/dwh/L3/visibility/lgd_voucher.sql'),
-    destination_dataset_table='logee-data-prod.L3_visibility.fact_lgd_voucher',
+    sql=get_sql_string(dags, 'source/sql/dwh/L3/lgt/fact_drivers.sql'),
+    destination_dataset_table='logee-data-prod.L3_lgt.fact_drivers',
     write_disposition='WRITE_APPEND',
     allow_large_results=True,
     use_legacy_sql=False,
@@ -61,7 +63,8 @@ fact_lgd_voucher = BigQueryExecuteQueryOperator(
         "ALLOW_FIELD_ADDITION", "ALLOW_FIELD_RELAXATION"
     ],
     time_partitioning={
-        "type": "DAY"
+        "type": "DAY",
+        "field": "modified_at"
     },
     labels={
         "type": "scheduled",
@@ -70,4 +73,4 @@ fact_lgd_voucher = BigQueryExecuteQueryOperator(
     }
 )
 
-wait >> fact_lgd_voucher
+external_task >> fact_dma_logee_drivers
