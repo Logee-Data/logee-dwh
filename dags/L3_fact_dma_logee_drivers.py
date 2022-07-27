@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from airflow import DAG
 from airflow.sensors.time_delta_sensor import TimeDeltaSensor
 from airflow.providers.google.cloud.operators.bigquery import BigQueryExecuteQueryOperator
-# from airflow.sensors.external_task import ExternalTaskSensor
+from airflow.sensors.external_task import ExternalTaskSensor
 
 
 def get_sql_string(_dags, _path):
@@ -36,7 +36,7 @@ default_args = {
 }
 
 dag = DAG(
-    dag_id='L3_dma_logee_drivers',
+    dag_id='L3_fact_dma_logee_drivers',
     schedule_interval='0 */3 * * *',
     default_args=default_args,
     catchup=False
@@ -45,14 +45,23 @@ dag = DAG(
 wait = TimeDeltaSensor(
     task_id='wait_for_data',
     dag=dag,
-    delta=timedelta(hours=9)
+    delta=timedelta(minutes=10)
 )
+
+external_task = ExternalTaskSensor(
+    task_id=f'wait_L2_visibility_dma_logee_drivers',
+    dag=dag,
+    external_dag_id='L2_visibility_dma_logee_drivers',
+    external_task_id='move_L1_to_L2'
+)
+
+wait >> external_task
 
 #  FACT_DMA_LOGEE_DRIVERS
 fact_dma_logee_drivers = BigQueryExecuteQueryOperator(
     task_id='fact_dma_logee_drivers',
     dag=dag,
-    sql=get_sql_string(dags, 'source/sql/dwh/L3/visibility/dma_logee_drivers.sql'),
+    sql=get_sql_string(dags, 'source/sql/dwh/L3/visibility/fact_dma_logee_drivers.sql'),
     destination_dataset_table='logee-data-prod.L3_visibility.fact_dma_logee_drivers',
     write_disposition='WRITE_APPEND',
     allow_large_results=True,
@@ -62,7 +71,8 @@ fact_dma_logee_drivers = BigQueryExecuteQueryOperator(
         "ALLOW_FIELD_ADDITION", "ALLOW_FIELD_RELAXATION"
     ],
     time_partitioning={
-        "type": "DAY"
+        "type": "DAY",
+        "field": "modified_at"
     },
     labels={
         "type": "scheduled",
@@ -71,4 +81,4 @@ fact_dma_logee_drivers = BigQueryExecuteQueryOperator(
     }
 )
 
-wait >> fact_dma_logee_drivers
+external_task >> fact_dma_logee_drivers
