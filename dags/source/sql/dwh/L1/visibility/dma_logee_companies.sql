@@ -154,7 +154,6 @@ SELECT
   CAST(JSON_EXTRACT(A.data, '$.isDeleted') AS BOOLEAN) AS is_deleted,
   REPLACE(JSON_EXTRACT(A.data, '$.createdBy'), '"', '') AS created_by,
   CAST(REPLACE(JSON_EXTRACT(A.data, '$.createdAt'), '"', '') AS TIMESTAMP) AS created_at,
-  REPLACE(JSON_EXTRACT(A.data, '$.modifiedBy'), '"', '') AS modified_by,
   IF(REPLACE(JSON_EXTRACT(A.data, '$.modifiedBy'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(A.data, '$.modifiedBy'), '"', '')) AS modified_by,
   IF(REPLACE(JSON_EXTRACT(A.data, '$.bankAccountName'), '"', '') = "", NULL, REPLACE(JSON_EXTRACT(A.data, '$.bankAccountName'), '"', '')) AS bank_account_name,
   REPLACE(JSON_EXTRACT(A.data, '$.bankAccountNum'), '"', '') AS bank_account_num,
