@@ -35,7 +35,7 @@ default_args = {
 }
 
 dag = DAG(
-    dag_id='L3_fact_lgd_brand',
+    dag_id='L3_lgd_fact_brand',
     schedule_interval='0 */3 * * *',
     default_args=default_args,
     catchup=False
@@ -50,10 +50,10 @@ external_task = ExternalTaskSensor(
 
 #  FACT_LGD_BRAND
 fact_lgd_brand = BigQueryExecuteQueryOperator(
-    task_id='fact_lgd_brand',
+    task_id='L3_lgd_fact_brand',
     dag=dag,
-    sql=get_sql_string(dags, 'source/sql/dwh/L3/visibility/lgd/fact_lgd_brand.sql'),
-    destination_dataset_table='logee-data-prod.L3_visibility.fact_lgd_brand',
+    sql=get_sql_string(dags, 'source/sql/dwh/L3/lgd/fact_brand.sql'),
+    destination_dataset_table='logee-data-prod.L3_lgd.fact_brand',
     write_disposition='WRITE_APPEND',
     allow_large_results=True,
     use_legacy_sql=False,
