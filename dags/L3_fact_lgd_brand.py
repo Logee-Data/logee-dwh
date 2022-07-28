@@ -41,17 +41,18 @@ dag = DAG(
     catchup=False
 )
 
-wait = TimeDeltaSensor(
-    task_id='wait_for_data',
+external_task = ExternalTaskSensor(
+    task_id=f'wait_L2_visibility_lgd_brand',
     dag=dag,
-    delta=timedelta(hours=9)
+    external_dag_id='L2_visibility_lgd_brand',
+    external_task_id='move_L1_to_L2'
 )
 
 #  FACT_LGD_BRAND
 fact_lgd_brand = BigQueryExecuteQueryOperator(
     task_id='fact_lgd_brand',
     dag=dag,
-    sql=get_sql_string(dags, 'source/sql/dwh/L3/visibility/fact_lgd_brand.sql'),
+    sql=get_sql_string(dags, 'source/sql/dwh/L3/visibility/lgd/fact_lgd_brand.sql'),
     destination_dataset_table='logee-data-prod.L3_visibility.fact_lgd_brand',
     write_disposition='WRITE_APPEND',
     allow_large_results=True,
@@ -70,4 +71,4 @@ fact_lgd_brand = BigQueryExecuteQueryOperator(
     }
 )
 
-wait >> fact_lgd_brand
+external_task >> fact_lgd_brand
