@@ -36,8 +36,8 @@ default_args = {
 }
 
 dag = DAG(
-    dag_id='L3_lgd_companies',
-    schedule_interval='@daily',
+    dag_id='L3_fact_lgd_companies',
+    schedule_interval='0 */3 * * *',
     default_args=default_args,
     catchup=False
 )
@@ -52,8 +52,8 @@ wait = TimeDeltaSensor(
 fact_visit = BigQueryExecuteQueryOperator(
     task_id='fact_lgd_companies',
     dag=dag,
-    sql=get_sql_string(dags, 'source/sql/dwh/L3/visibility/lgd_companies.sql'),
-    destination_dataset_table='logee-data-prod.L3_visibility.fact_lgd_companies${{ ds_nodash }}',
+    sql=get_sql_string(dags, 'source/sql/dwh/L3/visibility/fact_lgd_companies.sql'),
+    destination_dataset_table='logee-data-prod.L3_visibility.fact_lgd_companies',
     write_disposition='WRITE_APPEND',
     allow_large_results=True,
     use_legacy_sql=False,
@@ -71,14 +71,14 @@ fact_visit = BigQueryExecuteQueryOperator(
     }
 )
 
-wait >> fact_visit
+wait >> fact_lgd_companies
 
 
 #  FACT_lgd_companies_company_partnership
 fact_search = BigQueryExecuteQueryOperator(
-    task_id='fact_search',
+    task_id='fact_lgd_companies_company_partnership',
     dag=dag,
-    sql=get_sql_string(dags, 'source/sql/dwh/L3/visibility/lgd_companies_company_partnership.sql'),
+    sql=get_sql_string(dags, 'source/sql/dwh/L3/visibility/fact_lgd_companies_company_partnership.sql'),
     destination_dataset_table='logee-data-prod.L3_visibility.fact_lgd_companies_company_partnership',
     write_disposition='WRITE_APPEND',
     allow_large_results=True,
@@ -97,4 +97,4 @@ fact_search = BigQueryExecuteQueryOperator(
     }
 )
 
-wait >> fact_search
+wait >> fact_lgd_companies_company_partnership
