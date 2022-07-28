@@ -4,3 +4,18 @@ destination: logee-data-prod.L1_visibility.lgd_orders
 sql: source/sql/dwh/L1/visibility/lgd_orders.sql
 schedule: 0 */3 * * *
 time_partitioning: modified_at
+
+schema:
+  description: 
+  columns:
+    master:
+      - name: order_id
+        description: Unique identifier of an order on Logee Order. Generated when an order is submitted
+      - name: invoice_id
+        description: Unique identifier of invoice for one particular order_id. Generated when an order is paid
+      - name: store
+        description: Detail of the store_id, explain more about the store that ordered the product
+        columns:
+          - name: _id
+            description: Internal id for store
+    inherit: []
