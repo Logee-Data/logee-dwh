@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from airflow import DAG
 from airflow.sensors.time_delta_sensor import TimeDeltaSensor
 from airflow.providers.google.cloud.operators.bigquery import BigQueryExecuteQueryOperator
-# from airflow.sensors.external_task import ExternalTaskSensor
+from airflow.sensors.external_task import ExternalTaskSensor
 
 
 def get_sql_string(_dags, _path):
@@ -42,10 +42,11 @@ dag = DAG(
     catchup=False
 )
 
-wait = TimeDeltaSensor(
-    task_id='wait_for_data',
+external_task = ExternalTaskSensor(
+    task_id=f'wait_L2_visibility_lgd_companies',
     dag=dag,
-    delta=timedelta(hours=9)
+    external_dag_id='L2_visibility_lgd_companies',
+    external_task_id='move_L1_to_L2'
 )
 
 #  FACT_LGD_COMPANIES
