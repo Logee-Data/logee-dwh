@@ -19,3 +19,4 @@ schema:
           - name: _id
             description: Internal id for store
     inherit: []
+
