@@ -10,7 +10,7 @@ depends_on:
       - move_raw_to_L1
 
 schema:
-  description: 
+  description: Table containing orders from LGD with masked sensitive data
   columns:
     master: []
     inherit:

@@ -6,7 +6,7 @@ schedule: 0 */3 * * *
 time_partitioning: modified_at
 
 schema:
-  description: 
+  description: Table containing orders from LGD
   columns:
     master:
       - name: order_id
