@@ -68,5 +68,3 @@ SELECT
 FROM
   final
 WHERE rn = 1
-ORDER BY
-  order_id, modified_at
