@@ -36,7 +36,7 @@ default_args = {
 }
 
 dag = DAG(
-    dag_id='L3_logee_attendance_ga',
+    dag_id='L3_lgd_fact_attendance',
     schedule_interval='@daily',
     default_args=default_args,
     catchup=False
@@ -100,7 +100,7 @@ fact_attendances = BigQueryExecuteQueryOperator(
 
 external_task >> fact_attendances
 
-#  FACT_LGD_TRACK_ACTIVITIES
+#  FACT_TRACK_ACTIVITIES
 fact_track_activities = BigQueryExecuteQueryOperator(
     task_id='fact_track_activities',
     dag=dag,
