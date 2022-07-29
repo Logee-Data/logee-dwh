@@ -53,7 +53,7 @@ external_task = ExternalTaskSensor(
 fact_store = BigQueryExecuteQueryOperator(
     task_id='fact_store',
     dag=dag,
-    sql=get_sql_string(dags, 'source/sql/dwh/L3/lgd/fact_store.sql'),
+    sql=get_sql_string(dags, 'source/sql/dwh/L3/lgd/lgd_store/fact_store.sql'),
     destination_dataset_table='logee-data-prod.L3_lgd.fact_store',
     write_disposition='WRITE_APPEND',
     allow_large_results=True,
@@ -79,7 +79,7 @@ external_task >> fact_store
 fact_store_list_address = BigQueryExecuteQueryOperator(
     task_id='fact_store_list_address',
     dag=dag,
-    sql=get_sql_string(dags, 'source/sql/dwh/L3/lgd/fact_store_list_address.sql'),
+    sql=get_sql_string(dags, 'source/sql/dwh/L3/lgd/lgd_store/fact_store_list_address.sql'),
     destination_dataset_table='logee-data-prod.L3_lgd.fact_store_list_address',
     write_disposition='WRITE_APPEND',
     allow_large_results=True,
