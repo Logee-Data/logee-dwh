@@ -36,16 +36,10 @@ default_args = {
 }
 
 dag = DAG(
-    dag_id='L3_fact_lgd_orders',
+    dag_id='L3_lgd_orders',
     schedule_interval='0 */3 * * *',
     default_args=default_args,
     catchup=False
-)
-
-wait = TimeDeltaSensor(
-    task_id='wait_for_data',
-    dag=dag,
-    delta=timedelta(minutes=10)
 )
 
 external_task = ExternalTaskSensor(
@@ -55,14 +49,12 @@ external_task = ExternalTaskSensor(
     external_task_id='move_L1_to_L2'
 )
 
-wait >> external_task
-
 #  FACT_LGD_ORDERS
-fact_lgd_orders = BigQueryExecuteQueryOperator(
-    task_id='fact_lgd_orders',
+fact_orders = BigQueryExecuteQueryOperator(
+    task_id='fact_orders',
     dag=dag,
-    sql=get_sql_string(dags, 'source/sql/dwh/L3/visibility/fact_lgd_orders.sql'),
-    destination_dataset_table='logee-data-prod.L3_visibility.fact_lgd_orders',
+    sql=get_sql_string(dags, 'source/sql/dwh/L3/lgd/fact_orders.sql'),
+    destination_dataset_table='logee-data-prod.L3_lgd.fact_orders',
     write_disposition='WRITE_APPEND',
     allow_large_results=True,
     use_legacy_sql=False,
@@ -81,14 +73,14 @@ fact_lgd_orders = BigQueryExecuteQueryOperator(
     }
 )
 
-external_task >> fact_lgd_orders
+external_task >> fact_orders
 
 #  FACT_LGD_ORDERS_POOL_STATUS
-fact_lgd_orders_pool_status = BigQueryExecuteQueryOperator(
-    task_id='fact_lgd_orders_pool_status',
+fact_orders_pool_status = BigQueryExecuteQueryOperator(
+    task_id='fact_orders_pool_status',
     dag=dag,
-    sql=get_sql_string(dags, 'source/sql/dwh/L3/visibility/fact_lgd_orders_pool_status.sql'),
-    destination_dataset_table='logee-data-prod.L3_visibility.fact_lgd_orders_pool_status',
+    sql=get_sql_string(dags, 'source/sql/dwh/L3/lgd/fact_orders_pool_status.sql'),
+    destination_dataset_table='logee-data-prod.L3_lgd.fact_orders_pool_status',
     write_disposition='WRITE_APPEND',
     allow_large_results=True,
     use_legacy_sql=False,
@@ -107,4 +99,4 @@ fact_lgd_orders_pool_status = BigQueryExecuteQueryOperator(
     }
 )
 
-external_task >> fact_lgd_orders_pool_status
+external_task >> fact_orders_pool_status
