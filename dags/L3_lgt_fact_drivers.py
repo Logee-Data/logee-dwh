@@ -36,7 +36,7 @@ default_args = {
 }
 
 dag = DAG(
-    dag_id='L3_lgt_fact_drivers',
+    dag_id='L3_dma_logee_drivers',
     schedule_interval='0 */3 * * *',
     default_args=default_args,
     catchup=False
