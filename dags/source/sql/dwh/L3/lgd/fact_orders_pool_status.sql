@@ -68,3 +68,9 @@ SELECT
 FROM
   final
 WHERE rn = 1
+AND CONCAT(order_id, '_', CAST(status_modified_at AS STRING), '_', status) NOT IN (
+  SELECT
+    DISTINCT CONCAT(order_id, '_', CAST(status_modified_at AS STRING), '_', status)
+  FROM
+    `logee-data-prod.L3_lgd.fact_orders_pool_status`
+)
