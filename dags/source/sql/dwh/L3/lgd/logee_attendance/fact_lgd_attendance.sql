@@ -1,6 +1,8 @@
 SELECT 
     * 
     EXCEPT (
+    track_activities,
+    attendances,
     quality_check
   )
 FROM 
