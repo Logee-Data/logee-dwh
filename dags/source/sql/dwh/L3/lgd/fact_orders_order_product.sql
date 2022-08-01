@@ -111,15 +111,76 @@ WITH base AS (
         NULL
       ) AS variant
     ) AS sub_product_variant,
-    LAG(order_product.modified_at) OVER(PARTITION BY order_id, order_product.sub_product_id ORDER BY modified_at) AS previous_modified_at
+    LAG(order_product.modified_at) OVER(PARTITION BY order_id, created_at, order_product.sub_product_id ORDER BY modified_at) AS previous_modified_at
   FROM
     first_explode
 )
 
+,new_final AS (
+  SELECT
+    order_id, sub_product_id, order_id_modified_at, modified_at,
+    * EXCEPT(order_id, sub_product_id, order_id_modified_at, modified_at, previous_modified_at)
+  FROM lgd_orders_order_product
+  WHERE
+    modified_at != previous_modified_at
+)
+
+, dwh_latest AS (
+  SELECT
+    * EXCEPT(latest)
+  FROM
+    (
+      SELECT
+        order_id,
+        order_id_created_at,
+        sub_product_id,
+        modified_at,
+        ROW_NUMBER() OVER(PARTITION BY order_id, sub_product_id, order_id_created_at ORDER BY modified_at DESC) AS latest
+      FROM
+        `logee-data-prod.L3_lgd.fact_orders_order_product`
+    )
+  WHERE
+    latest = 1
+)
+
+, unify AS (
+  SELECT
+    *,
+    LAG(modified_at) OVER(PARTITION BY order_id, order_id_created_at, sub_product_id ORDER BY modified_at) AS previous_modified_at
+  FROM (
+    SELECT
+      order_id,
+      order_id_created_at,
+      sub_product_id,
+      modified_at,
+    FROM
+      dwh_latest
+    UNION ALL
+    SELECT
+      order_id,
+      order_id_created_at,
+      sub_product_id,
+      modified_at,
+    FROM
+      new_final
+  )
+)
+
+, lookup_data AS (
+  SELECT
+    order_id, order_id_created_at, sub_product_id, modified_at, previous_modified_at
+  FROM unify
+  ORDER BY order_id, sub_product_id, order_id_created_at
+)
 
 SELECT
-  order_id, sub_product_id, order_id_modified_at, modified_at,
-  * EXCEPT(order_id, sub_product_id, order_id_modified_at, modified_at, previous_modified_at)
-FROM lgd_orders_order_product
+  *
+FROM
+  new_final
 WHERE
-  modified_at != previous_modified_at
+  CONCAT(order_id, CAST(order_id_created_at AS STRING), sub_product_id, cast(modified_at AS STRING)) IN (
+    SELECT
+      DISTINCT CONCAT(order_id, CAST(order_id_created_at AS STRING), sub_product_id, cast(modified_at AS STRING))
+    FROM
+      lookup_data
+  )
