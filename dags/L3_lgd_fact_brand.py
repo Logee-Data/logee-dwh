@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from airflow import DAG
 from airflow.sensors.time_delta_sensor import TimeDeltaSensor
 from airflow.providers.google.cloud.operators.bigquery import BigQueryExecuteQueryOperator
-# from airflow.sensors.external_task import ExternalTaskSensor
+from airflow.sensors.external_task import ExternalTaskSensor
 
 
 def get_sql_string(_dags, _path):
