@@ -123,4 +123,3 @@ SELECT
 FROM lgd_orders_order_product
 WHERE
   modified_at != previous_modified_at
-ORDER BY 1, 2, 3, 4
