@@ -110,78 +110,64 @@ WITH base AS (
         JSON_EXTRACT_SCALAR(order_product.sub_product_variant[OFFSET(0)], "$.variant"),
         NULL
       ) AS variant
-    ) AS sub_product_variant,
-    LAG(order_product.modified_at) OVER(PARTITION BY order_id, created_at, order_product.sub_product_id ORDER BY modified_at) AS previous_modified_at
+    ) AS sub_product_variant
   FROM
     first_explode
 )
 
-,new_final AS (
+-- UNION WITH THE LATEST FIRST
+,pre_latest_existing AS (
   SELECT
-    order_id, sub_product_id, order_id_modified_at, modified_at,
-    * EXCEPT(order_id, sub_product_id, order_id_modified_at, modified_at, previous_modified_at)
-  FROM lgd_orders_order_product
-  WHERE
-    modified_at != previous_modified_at
-)
-
-, dwh_latest AS (
-  SELECT
-    * EXCEPT(newest)
+    order_id,
+    sub_product_id,
+    order_id_created_at,
+    modified_at,
+    order_id_modified_at,
+    ROW_NUMBER() OVER(PARTITION BY order_id, sub_product_id ORDER BY modified_at DESC) rn
   FROM
-    (
-      SELECT
-        order_id,
-        order_id_created_at,
-        sub_product_id,
-        modified_at,
-        ROW_NUMBER() OVER(PARTITION BY order_id, sub_product_id, order_id_created_at ORDER BY modified_at DESC) AS newest
-      FROM
-        `logee-data-prod.L3_lgd.fact_orders_order_product`
-    )
-  WHERE
-    newest = 1
+    `logee-data-prod.L3_lgd.fact_orders_order_product`
 )
 
-, unify AS (
+,latest_existing AS (
   SELECT
-    *,
-    LAG(modified_at) OVER(PARTITION BY order_id, order_id_created_at, sub_product_id ORDER BY modified_at) AS previous_modified_at
+    * EXCEPT(rn)
+  FROM
+    pre_latest_existing
+  WHERE
+    rn = 1
+
+  UNION ALL
+
+  SELECT
+    order_id,
+    sub_product_id,
+    order_id_created_at,
+    modified_at,
+    order_id_modified_at
+  FROM
+    lgd_orders_order_product
+)
+
+, check_changes AS (
+  SELECT
+    * EXCEPT(previous_modified_at)
   FROM (
     SELECT
-      order_id,
-      order_id_created_at,
-      sub_product_id,
-      modified_at,
-    FROM
-      dwh_latest
-    UNION ALL
-    SELECT
-      order_id,
-      order_id_created_at,
-      sub_product_id,
-      modified_at,
-    FROM
-      new_final
+      *,
+      LAG(modified_at) OVER(PARTITION BY order_id, sub_product_id ORDER BY order_id_modified_at, modified_at) AS previous_modified_at
+    FROM latest_existing
+    ORDER BY 1,2,3,4
   )
-)
-
-, lookup_data AS (
-  SELECT
-    order_id, order_id_created_at, sub_product_id, modified_at, previous_modified_at
-  FROM unify
-  WHERE modified_at != previous_modified_at
-  ORDER BY order_id, sub_product_id, order_id_created_at
+  WHERE previous_modified_at != modified_at
+  OR previous_modified_at IS NULL
 )
 
 SELECT
-  *
-FROM
-  new_final
-WHERE
-  CONCAT(order_id, CAST(order_id_created_at AS STRING), sub_product_id, cast(modified_at AS STRING)) IN (
-    SELECT
-      DISTINCT CONCAT(order_id, CAST(order_id_created_at AS STRING), sub_product_id, cast(modified_at AS STRING))
-    FROM
-      lookup_data
-  )
+  a.*
+FROM lgd_orders_order_product a
+  INNER JOIN check_changes b
+  ON a.order_id = b.order_id
+  AND a.sub_product_id = b.sub_product_id
+  AND a.order_id_created_at = b.order_id_created_at
+  AND a.order_id_modified_at = b.order_id_modified_at
+  AND a.modified_at = b.modified_at
