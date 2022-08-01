@@ -127,7 +127,7 @@ WITH base AS (
 
 , dwh_latest AS (
   SELECT
-    * EXCEPT(latest)
+    * EXCEPT(newest)
   FROM
     (
       SELECT
@@ -135,12 +135,12 @@ WITH base AS (
         order_id_created_at,
         sub_product_id,
         modified_at,
-        ROW_NUMBER() OVER(PARTITION BY order_id, sub_product_id, order_id_created_at ORDER BY modified_at DESC) AS latest
+        ROW_NUMBER() OVER(PARTITION BY order_id, sub_product_id, order_id_created_at ORDER BY modified_at DESC) AS newest
       FROM
         `logee-data-prod.L3_lgd.fact_orders_order_product`
     )
   WHERE
-    latest = 1
+    newest = 1
 )
 
 , unify AS (
@@ -170,6 +170,7 @@ WITH base AS (
   SELECT
     order_id, order_id_created_at, sub_product_id, modified_at, previous_modified_at
   FROM unify
+  WHERE modified_at != previous_modified_at
   ORDER BY order_id, sub_product_id, order_id_created_at
 )
 
