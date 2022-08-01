@@ -6,7 +6,7 @@ SELECT
   modified_at,
   published_timestamp
 FROM
-  `logee-data-prod.L2_visibility.lgd_product`
-WHERE
-  modified_at BETWEEN '{{ execution_date }}' AND '{{ next_execution_date }}',
+  `logee-data-prod.L2_visibility.lgd_product`,
   UNNEST(product_variant) AS product_variant
+WHERE
+  modified_at BETWEEN '{{ execution_date }}' AND '{{ next_execution_date }}'
