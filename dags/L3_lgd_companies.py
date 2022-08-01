@@ -9,6 +9,7 @@ from airflow.sensors.external_task import ExternalTaskSensor
 def get_sql_string(_dags, _path):
     """
     To read the SQL files and return the SQL query as a string
+
     :param _dags: The base root folder
     :type _dags: str
     :param _path: Location of the SQL file
@@ -35,25 +36,27 @@ default_args = {
 }
 
 dag = DAG(
-    dag_id='L3_lgd_fact_voucher',
+    dag_id='L3_lgd_companies',
     schedule_interval='0 */3 * * *',
     default_args=default_args,
     catchup=False
 )
 
 external_task = ExternalTaskSensor(
-    task_id=f'wait_L2_visibility_lgd_voucher',
+    task_id=f'wait_L2_visibility_lgd_companies',
     dag=dag,
-    external_dag_id='L2_visibility_lgd_voucher',
+    external_dag_id='L2_visibility_lgd_companies',
     external_task_id='move_L1_to_L2'
 )
 
-#  FACT_LGD_VOUCHER
-fact_lgd_voucher = BigQueryExecuteQueryOperator(
-    task_id='L3_lgd_fact_voucher',
+external_task
+
+#  FACT_LGD_COMPANIES
+fact_companies = BigQueryExecuteQueryOperator(
+    task_id='fact_companies',
     dag=dag,
-    sql=get_sql_string(dags, 'source/sql/dwh/L3/lgd/fact_voucher.sql'),
-    destination_dataset_table='logee-data-prod.L3_lgd.fact_voucher',
+    sql=get_sql_string(dags, 'source/sql/dwh/L3/lgd/fact_companies.sql'),
+    destination_dataset_table='logee-data-prod.L3_lgd.fact_companies',
     write_disposition='WRITE_APPEND',
     allow_large_results=True,
     use_legacy_sql=False,
@@ -72,4 +75,4 @@ fact_lgd_voucher = BigQueryExecuteQueryOperator(
     }
 )
 
-external_task >> fact_lgd_voucher
+external_task >> fact_companies
