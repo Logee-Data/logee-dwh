@@ -122,8 +122,7 @@ WITH base AS (
     sub_product_id,
     order_id_created_at,
     modified_at,
-    order_id_modified_at,
-    ROW_NUMBER() OVER(PARTITION BY order_id, sub_product_id ORDER BY modified_at DESC) rn
+    order_id_modified_at
   FROM
     `logee-data-prod.L3_lgd.fact_orders_order_product`
   WHERE order_id_modified_at >= TIMESTAMP_SUB(TIMESTAMP('{{ execution_date }}'),  INTERVAL 14 DAY)
@@ -131,11 +130,9 @@ WITH base AS (
 
 ,latest_existing AS (
   SELECT
-    * EXCEPT(rn)
+    *
   FROM
     pre_latest_existing
-  WHERE
-    rn = 1
 
   UNION ALL
 
@@ -155,12 +152,15 @@ WITH base AS (
   FROM (
     SELECT
       *,
-      LAG(modified_at) OVER(PARTITION BY order_id, sub_product_id ORDER BY order_id_modified_at, modified_at) AS previous_modified_at
+      LAG(modified_at) OVER(PARTITION BY order_id, sub_product_id ORDER BY order_id_modified_at, modified_at) AS previous_modified_at,
+      LEAD(modified_at) OVER(PARTITION BY order_id, sub_product_id ORDER BY order_id_modified_at, modified_at) AS next_modified_at
     FROM latest_existing
     ORDER BY 1,2,3,4
   )
-  WHERE previous_modified_at != modified_at
-  OR previous_modified_at IS NULL
+  WHERE (previous_modified_at != modified_at
+  OR previous_modified_at IS NULL) AND (
+    next_modified_at != modified_at OR next_modified_at IS NULL
+  )
 )
 
 SELECT
