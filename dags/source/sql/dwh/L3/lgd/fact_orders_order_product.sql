@@ -126,6 +126,7 @@ WITH base AS (
     ROW_NUMBER() OVER(PARTITION BY order_id, sub_product_id ORDER BY modified_at DESC) rn
   FROM
     `logee-data-prod.L3_lgd.fact_orders_order_product`
+  WHERE order_id_modified_at >= TIMESTAMP_SUB(TIMESTAMP('{{ execution_date }}'),  INTERVAL 14 DAY)
 )
 
 ,latest_existing AS (
