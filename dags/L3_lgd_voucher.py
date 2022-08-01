@@ -9,7 +9,6 @@ from airflow.sensors.external_task import ExternalTaskSensor
 def get_sql_string(_dags, _path):
     """
     To read the SQL files and return the SQL query as a string
-
     :param _dags: The base root folder
     :type _dags: str
     :param _path: Location of the SQL file
@@ -36,25 +35,25 @@ default_args = {
 }
 
 dag = DAG(
-    dag_id='L3_lgt_fact_drivers',
+    dag_id='L3_lgd_voucher',
     schedule_interval='0 */3 * * *',
     default_args=default_args,
     catchup=False
 )
 
 external_task = ExternalTaskSensor(
-    task_id=f'wait_L2_visibility_dma_logee_drivers',
+    task_id=f'wait_L2_visibility_lgd_voucher',
     dag=dag,
-    external_dag_id='L2_visibility_dma_logee_drivers',
+    external_dag_id='L2_visibility_lgd_voucher',
     external_task_id='move_L1_to_L2'
 )
 
-#  FACT_DMA_LOGEE_DRIVERS
-fact_dma_logee_drivers = BigQueryExecuteQueryOperator(
-    task_id='L3_lgt_fact_drivers',
+#  FACT_LGD_VOUCHER
+fact_lgd_voucher = BigQueryExecuteQueryOperator(
+    task_id='L3_lgd_fact_voucher',
     dag=dag,
-    sql=get_sql_string(dags, 'source/sql/dwh/L3/lgt/fact_drivers.sql'),
-    destination_dataset_table='logee-data-prod.L3_lgt.fact_drivers',
+    sql=get_sql_string(dags, 'source/sql/dwh/L3/lgd/fact_voucher.sql'),
+    destination_dataset_table='logee-data-prod.L3_lgd.fact_voucher',
     write_disposition='WRITE_APPEND',
     allow_large_results=True,
     use_legacy_sql=False,
@@ -73,4 +72,4 @@ fact_dma_logee_drivers = BigQueryExecuteQueryOperator(
     }
 )
 
-external_task >> fact_dma_logee_drivers
+external_task >> fact_lgd_voucher
