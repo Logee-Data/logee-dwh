@@ -75,6 +75,32 @@ fact_orders = BigQueryExecuteQueryOperator(
 
 external_task >> fact_orders
 
+#  FACT_LGD_ORDERS_ORDER_PRODUCT
+fact_orders_order_product = BigQueryExecuteQueryOperator(
+    task_id='fact_orders_order_product',
+    dag=dag,
+    sql=get_sql_string(dags, 'source/sql/dwh/L3/lgd/fact_orders_order_product.sql'),
+    destination_dataset_table='logee-data-prod.L3_lgd.fact_orders_order_product',
+    write_disposition='WRITE_APPEND',
+    allow_large_results=True,
+    use_legacy_sql=False,
+    location='asia-southeast2',
+    schema_update_options=[
+        "ALLOW_FIELD_ADDITION", "ALLOW_FIELD_RELAXATION"
+    ],
+    time_partitioning={
+        "type": "DAY",
+        "field": "modified_at"
+    },
+    labels={
+        "type": "scheduled",
+        "level": "landing",
+        "runner": "airflow"
+    }
+)
+
+external_task >> fact_orders_order_product
+
 #  FACT_LGD_ORDERS_POOL_STATUS
 fact_orders_pool_status = BigQueryExecuteQueryOperator(
     task_id='fact_orders_pool_status',
