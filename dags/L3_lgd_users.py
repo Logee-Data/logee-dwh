@@ -35,7 +35,7 @@ default_args = {
 }
 
 dag = DAG(
-    dag_id='L3_lgd_fact_users',
+    dag_id='L3_lgd_users',
     schedule_interval='0 */3 * * *',
     default_args=default_args,
     catchup=False
