@@ -36,7 +36,7 @@ default_args = {
 }
 
 dag = DAG(
-    dag_id='L3_lgd_fact_attendance',
+    dag_id='L3_lgd_attendance',
     schedule_interval='@daily',
     default_args=default_args,
     catchup=False
@@ -51,11 +51,11 @@ external_task = ExternalTaskSensor(
 
 
 #  FACT_LGD_ATTENDANCE
-fact_lgd_attendance = BigQueryExecuteQueryOperator(
-    task_id='fact_lgd_attendance',
+fact_attendance = BigQueryExecuteQueryOperator(
+    task_id='fact_attendance',
     dag=dag,
-    sql=get_sql_string(dags, 'source/sql/dwh/L3/lgd/logee_attendance/fact_lgd_attendance.sql'),
-    destination_dataset_table='logee-data-prod.L3_lgd.fact_lgd_attendance',
+    sql=get_sql_string(dags, 'source/sql/dwh/L3/lgd/fact_attendance.sql'),
+    destination_dataset_table='logee-data-prod.L3_lgd.fact_attendance',
     write_disposition='WRITE_APPEND',
     allow_large_results=True,
     use_legacy_sql=False,
@@ -73,14 +73,14 @@ fact_lgd_attendance = BigQueryExecuteQueryOperator(
     }
 )
 
-external_task >> fact_lgd_attendance
+external_task >> fact_attendance
 
-#  FACT_ATTENDANCES
-fact_attendances = BigQueryExecuteQueryOperator(
-    task_id='fact_attendances',
+#  FACT_LGD_ATTENDANCE_ATTENDANCES
+fact_attendance_attendances = BigQueryExecuteQueryOperator(
+    task_id='fact_attendance_attendances',
     dag=dag,
-    sql=get_sql_string(dags, 'source/sql/dwh/L3/lgd/logee_attendance/fact_attendances.sql'),
-    destination_dataset_table='logee-data-prod.L3_lgd.fact_attendances',
+    sql=get_sql_string(dags, 'source/sql/dwh/L3/lgd/fact_attendance_attendances.sql'),
+    destination_dataset_table='logee-data-prod.L3_lgd.fact_attendance_attendances',
     write_disposition='WRITE_APPEND',
     allow_large_results=True,
     use_legacy_sql=False,
@@ -98,14 +98,14 @@ fact_attendances = BigQueryExecuteQueryOperator(
     }
 )
 
-external_task >> fact_attendances
+external_task >> fact_attendance_attendances
 
-#  FACT_TRACK_ACTIVITIES
-fact_track_activities = BigQueryExecuteQueryOperator(
-    task_id='fact_track_activities',
+#  FACT_LGD_ATTENDANCE_TRACK_ACTIVITIES
+fact_attendance_track_activities = BigQueryExecuteQueryOperator(
+    task_id='fact_attendance_track_activities',
     dag=dag,
-    sql=get_sql_string(dags, 'source/sql/dwh/L3/logee_attendance/fact_track_activities.sql'),
-    destination_dataset_table='logee-data-prod.L3_lgd.fact_track_activities',
+    sql=get_sql_string(dags, 'source/sql/dwh/L3/lgd/fact_attendance_track_activities.sql'),
+    destination_dataset_table='logee-data-prod.L3_lgd.fact_attendance_track_activities',
     write_disposition='WRITE_APPEND',
     allow_large_results=True,
     use_legacy_sql=False,
@@ -123,4 +123,4 @@ fact_track_activities = BigQueryExecuteQueryOperator(
     }
 )
 
-external_task >> fact_track_activities
+external_task >> fact_attendance_track_activities
