@@ -125,4 +125,4 @@ fact_sub_product_booked_stock = BigQueryExecuteQueryOperator(
     }
 )
 
-external_task >> fact_booked_stock
+external_task >> fact_sub_product_booked_stock
