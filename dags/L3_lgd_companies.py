@@ -36,25 +36,27 @@ default_args = {
 }
 
 dag = DAG(
-    dag_id='L3_lgt_fact_drivers',
+    dag_id='L3_lgd_companies',
     schedule_interval='0 */3 * * *',
     default_args=default_args,
     catchup=False
 )
 
 external_task = ExternalTaskSensor(
-    task_id=f'wait_L2_visibility_dma_logee_drivers',
+    task_id=f'wait_L2_visibility_lgd_companies',
     dag=dag,
-    external_dag_id='L2_visibility_dma_logee_drivers',
+    external_dag_id='L2_visibility_lgd_companies',
     external_task_id='move_L1_to_L2'
 )
 
-#  FACT_DMA_LOGEE_DRIVERS
-fact_dma_logee_drivers = BigQueryExecuteQueryOperator(
-    task_id='L3_lgt_fact_drivers',
+external_task
+
+#  FACT_LGD_COMPANIES
+fact_companies = BigQueryExecuteQueryOperator(
+    task_id='fact_companies',
     dag=dag,
-    sql=get_sql_string(dags, 'source/sql/dwh/L3/lgt/fact_drivers.sql'),
-    destination_dataset_table='logee-data-prod.L3_lgt.fact_drivers',
+    sql=get_sql_string(dags, 'source/sql/dwh/L3/lgd/fact_companies.sql'),
+    destination_dataset_table='logee-data-prod.L3_lgd.fact_companies',
     write_disposition='WRITE_APPEND',
     allow_large_results=True,
     use_legacy_sql=False,
@@ -73,4 +75,4 @@ fact_dma_logee_drivers = BigQueryExecuteQueryOperator(
     }
 )
 
-external_task >> fact_dma_logee_drivers
+external_task >> fact_companies
