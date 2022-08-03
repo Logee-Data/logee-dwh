@@ -6,17 +6,82 @@ schedule: 0 */3 * * *
 time_partitioning: modified_at
 
 schema:
-  description: Table containing orders from LGD
+  description: Table containing detail transaction from LGD - Logee Order
   columns:
     master:
       - name: order_id
         description: Unique identifier of an order on Logee Order. Generated when an order is submitted
       - name: invoice_id
         description: Unique identifier of invoice for one particular order_id. Generated when an order is paid
+      - name: company_id
+        description: Unique identifier of the company where the order_id is assigned to
+      - name: store_id
+        description: Unique identifier of the store who created the order_id, and ordered it from the company_id
+      - name: bill_id
+        description: Unique identifier of bill that can contain multiple order_id for one payment
+      - name: sales_order_id
+        description: Generated when the warehouse has checked the ordered items on the warehouse. The total amount might be less than or equal to the purchase_order_id, but will never go beyond it
+      - name: payment_id
+        description: Unique identifier of payment method. Generated after choose the payment method
+      - name: purchase_on_delivery_id
+        description: Unique identifier for generate  POD (Purchase On Delivery) document
+      - name: purchase_order_id
+        description: Unique identifier of the purchase order from Customer about the order_id. This is not finalized depends on the availability of the ordered item in the warehouse
+      - name: url_purchase_on_delivery_pdf
+        description: Report of Purchase On Delivery attached in link pdf
+      - name: order_method
+        description: An order method chosen for product purchases carried out by SELF-SERVICE or DELIVERY
+      - name: payment_method_label
+        description: Payment method label of the payment_method
+      - name: company_category
+        description: Category of the company_id
+      - name: url_sales_order_pdf
+        description: Report of Sales Order attached in link pdf
+      - name: company_name
+        description: Name of the company_id
+      - name: bill_code
+        description: Bill code of the bill_id
+      - name: order_discount
+        description: Nominal discounts received when ordering products. Depending on the price of the product is discounted or not
+      - name: order_status
+        description: All statuses are set automatically when creating an order, and some statuses are updated automatically depending on the condition of the order, whether it has been paid, the order has been ship, or the payment has expired
+      - name: url_invoice_pdf
+        description: Report of Invoice attached in link pdf
+      - name: is_fullfilment_process
+        description: Status is decisive the order is integrated with logee fulfillment or not. Usually depends on the order from which company. If status is "false", order is not integrated with logee fulfillment
+      - name: url_purchase_order_pdf
+        description: Report of Purchase Order attached in link pdf
+      - name: order_code
+        description: Order code of the order_id
+      - name: payment_method
+        description: A way to pay an order within each type of payment method, there are often multiple payment options
       - name: store
         description: Detail of the store_id, explain more about the store that ordered the product
-        columns:
-          - name: _id
-            description: Internal id for store
-    inherit: []
+      - name: pool_status
+        description: Breakdown from order_status when order_status changes. There are order status and spesific date and time
+      - name: order_summary
+        description: Breakdown the amount of product prices that must be paid when an order is submitted
+      - name: order_by
+        description: Breakdown who created the order, ordered by store_id
+      - name: order_address
+        description: Detail description of address user who ordered the product
+      - name: payment
+        description: Detail of the payment_id, explain more about metadata and payment procedure
+      - name: order_product
+        description: Detail description of the product ordered
+      - name: is_received
+        description: A status shows the order has been received / the order has arrived at the customer or not
+      - name: is_deleted
+        description: A status indicating that this order has been deleted
+      - name: created_by
+        description: Username who has created the table
+      - name: created_at
+        description: A spesific date and time when data is created or incremented
+      - name: modified_by
+        description: Username who has changed the data
+      - name: modified_at
+        description: A spesific date and time when data is modified
+      - name: published_timestamp
+        description: A spesific date and time when data is published
+    inherit: [] 
 
