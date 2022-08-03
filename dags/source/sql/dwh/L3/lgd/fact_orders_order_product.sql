@@ -110,17 +110,65 @@ WITH base AS (
         JSON_EXTRACT_SCALAR(order_product.sub_product_variant[OFFSET(0)], "$.variant"),
         NULL
       ) AS variant
-    ) AS sub_product_variant,
-    LAG(order_product.modified_at) OVER(PARTITION BY order_id, order_product.sub_product_id ORDER BY modified_at) AS previous_modified_at
+    ) AS sub_product_variant
   FROM
     first_explode
 )
 
+-- UNION WITH THE LATEST FIRST
+,pre_latest_existing AS (
+  SELECT
+    order_id,
+    sub_product_id,
+    order_id_created_at,
+    modified_at,
+    order_id_modified_at
+  FROM
+    `logee-data-prod.L3_lgd.fact_orders_order_product`
+  WHERE order_id_modified_at >= TIMESTAMP_SUB(TIMESTAMP('{{ execution_date }}'),  INTERVAL 14 DAY)
+)
+
+,latest_existing AS (
+  SELECT
+    *
+  FROM
+    pre_latest_existing
+
+  UNION ALL
+
+  SELECT
+    order_id,
+    sub_product_id,
+    order_id_created_at,
+    modified_at,
+    order_id_modified_at
+  FROM
+    lgd_orders_order_product
+)
+
+, check_changes AS (
+  SELECT
+    * EXCEPT(previous_modified_at)
+  FROM (
+    SELECT
+      *,
+      LAG(modified_at) OVER(PARTITION BY order_id, sub_product_id ORDER BY order_id_modified_at, modified_at) AS previous_modified_at,
+      LEAD(modified_at) OVER(PARTITION BY order_id, sub_product_id ORDER BY order_id_modified_at, modified_at) AS next_modified_at
+    FROM latest_existing
+    ORDER BY 1,2,3,4
+  )
+  WHERE (previous_modified_at != modified_at
+  OR previous_modified_at IS NULL) AND (
+    next_modified_at != modified_at OR next_modified_at IS NULL
+  )
+)
 
 SELECT
-  order_id, sub_product_id, order_id_modified_at, modified_at,
-  * EXCEPT(order_id, sub_product_id, order_id_modified_at, modified_at, previous_modified_at)
-FROM lgd_orders_order_product
-WHERE
-  modified_at != previous_modified_at
-ORDER BY 1, 2, 3, 4
+  a.*
+FROM lgd_orders_order_product a
+  INNER JOIN check_changes b
+  ON a.order_id = b.order_id
+  AND a.sub_product_id = b.sub_product_id
+  AND a.order_id_created_at = b.order_id_created_at
+  AND a.order_id_modified_at = b.order_id_modified_at
+  AND a.modified_at = b.modified_at
