@@ -49,9 +49,7 @@ external_task = ExternalTaskSensor(
     external_task_id='move_L1_to_L2'
 )
 
-external_task
-
-#  FACT_LGD_COMPANIES
+#  FACT_lgd_companies
 fact_companies = BigQueryExecuteQueryOperator(
     task_id='fact_companies',
     dag=dag,
@@ -76,3 +74,30 @@ fact_companies = BigQueryExecuteQueryOperator(
 )
 
 external_task >> fact_companies
+
+#  FACT_lgd_companies_company_partnership
+fact_companies_company_partnership = BigQueryExecuteQueryOperator(
+    task_id='fact_companies_company_partnership',
+    dag=dag,
+    sql=get_sql_string(dags, 'source/sql/dwh/L3/lgd/fact_companies_company_partnership.sql'),
+    destination_dataset_table='logee-data-prod.L3_lgd.fact_companies_company_partnership',
+    write_disposition='WRITE_APPEND',
+    allow_large_results=True,
+    use_legacy_sql=False,
+    location='asia-southeast2',
+    schema_update_options=[
+        "ALLOW_FIELD_ADDITION", "ALLOW_FIELD_RELAXATION"
+    ],
+    time_partitioning={
+        "type": "DAY",
+        "field": "modified_at"
+    },
+    labels={
+        "type": "scheduled",
+        "level": "landing",
+        "runner": "airflow"
+    }
+)
+
+external_task >> fact_companies_company_partnership
+
