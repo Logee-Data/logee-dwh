@@ -8,3 +8,12 @@ depends_on:
   - dag_id: L1_visibility_lgd_orders
     task_id:
       - move_raw_to_L1
+
+schema:
+  description: Table containing detail transaction from LGD - Logee Order with masked sensitive data
+  columns:
+    master: []
+    inherit:
+      - table: L1.visibility.lgd_orders
+        full_copy: true
+        columns: null
